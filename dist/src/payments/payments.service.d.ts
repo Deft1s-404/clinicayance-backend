@@ -12,68 +12,68 @@ export declare class PaymentsService {
     constructor(paymentsRepository: PaymentsRepository, appointmentsService: AppointmentsService, funnelEventsService: FunnelEventsService);
     list(query: PaymentsQuery): Promise<PaginatedPayments>;
     findById(id: string): Promise<{
-        appointment: {
-            client: {
-                id: string;
-                status: import(".prisma/client").$Enums.ClientStatus;
-                createdAt: Date;
-                updatedAt: Date;
-                name: string;
-                email: string | null;
-                phone: string | null;
-                source: string | null;
-                tags: string[];
-                score: number;
-                notes: string | null;
-            };
-        } & {
-            id: string;
-            clientId: string;
-            status: import(".prisma/client").$Enums.AppointmentStatus;
-            createdAt: Date;
-            updatedAt: Date;
-            procedure: string;
-            start: Date;
-            end: Date;
-        };
         client: {
             id: string;
-            status: import(".prisma/client").$Enums.ClientStatus;
+            email: string | null;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
-            email: string | null;
             phone: string | null;
             source: string | null;
             tags: string[];
             score: number;
+            status: import(".prisma/client").$Enums.ClientStatus;
             notes: string | null;
+        };
+        appointment: {
+            client: {
+                id: string;
+                email: string | null;
+                name: string;
+                createdAt: Date;
+                updatedAt: Date;
+                phone: string | null;
+                source: string | null;
+                tags: string[];
+                score: number;
+                status: import(".prisma/client").$Enums.ClientStatus;
+                notes: string | null;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import(".prisma/client").$Enums.AppointmentStatus;
+            clientId: string;
+            procedure: string;
+            start: Date;
+            end: Date;
         };
     } & {
         id: string;
-        appointmentId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         clientId: string;
         value: Prisma.Decimal;
         method: string;
-        status: import(".prisma/client").$Enums.PaymentStatus;
         pixTxid: string | null;
         comprovanteUrl: string | null;
-        createdAt: Date;
-        updatedAt: Date;
+        appointmentId: string;
     }>;
     create(dto: CreatePaymentDto): Promise<Payment>;
     update(id: string, dto: UpdatePaymentDto): Promise<Payment>;
     delete(id: string): Promise<Payment>;
     handleWebhook(dto: PaymentWebhookDto): Promise<{
         id: string;
-        appointmentId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         clientId: string;
         value: Prisma.Decimal;
         method: string;
-        status: import(".prisma/client").$Enums.PaymentStatus;
         pixTxid: string | null;
         comprovanteUrl: string | null;
-        createdAt: Date;
-        updatedAt: Date;
+        appointmentId: string;
     }>;
 }

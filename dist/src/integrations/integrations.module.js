@@ -12,14 +12,18 @@ const clients_module_1 = require("../clients/clients.module");
 const leads_module_1 = require("../leads/leads.module");
 const integrations_controller_1 = require("./integrations.controller");
 const integrations_service_1 = require("./integrations.service");
+const google_oauth_controller_1 = require("./google-oauth.controller");
+const google_oauth_service_1 = require("./google-oauth.service");
+const google_calendar_service_1 = require("./google-calendar.service");
+const google_calendar_controller_1 = require("./google-calendar.controller");
 let IntegrationsModule = class IntegrationsModule {
 };
 exports.IntegrationsModule = IntegrationsModule;
 exports.IntegrationsModule = IntegrationsModule = __decorate([
     (0, common_1.Module)({
         imports: [clients_module_1.ClientsModule, leads_module_1.LeadsModule],
-        controllers: [integrations_controller_1.IntegrationsController],
-        providers: [integrations_service_1.IntegrationsService]
+        controllers: [integrations_controller_1.IntegrationsController, google_oauth_controller_1.GoogleOAuthController, google_calendar_controller_1.GoogleCalendarController],
+        providers: [integrations_service_1.IntegrationsService, google_oauth_service_1.GoogleOAuthService, google_calendar_service_1.GoogleCalendarService]
     })
 ], IntegrationsModule);
 //# sourceMappingURL=integrations.module.js.map

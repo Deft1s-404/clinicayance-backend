@@ -10,28 +10,28 @@ export declare class ClientsService {
     findById(id: string): Promise<Client>;
     findByEmail(email: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.ClientStatus;
+        email: string | null;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        email: string | null;
         phone: string | null;
         source: string | null;
         tags: string[];
         score: number;
+        status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
     } | null>;
     findByPhone(phone: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.ClientStatus;
+        email: string | null;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        email: string | null;
         phone: string | null;
         source: string | null;
         tags: string[];
         score: number;
+        status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
     } | null>;
     create(dto: CreateClientDto): Promise<Client>;

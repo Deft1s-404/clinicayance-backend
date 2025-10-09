@@ -9,54 +9,54 @@ export declare class ClientsController {
     list(query: PaginationQueryDto): Promise<PaginatedClients>;
     find(id: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.ClientStatus;
+        email: string | null;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        email: string | null;
         phone: string | null;
         source: string | null;
         tags: string[];
         score: number;
+        status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
     }>;
     create(dto: CreateClientDto): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.ClientStatus;
+        email: string | null;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        email: string | null;
         phone: string | null;
         source: string | null;
         tags: string[];
         score: number;
+        status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
     }>;
     update(id: string, dto: UpdateClientDto): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.ClientStatus;
+        email: string | null;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        email: string | null;
         phone: string | null;
         source: string | null;
         tags: string[];
         score: number;
+        status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
     }>;
     remove(id: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.ClientStatus;
+        email: string | null;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        email: string | null;
         phone: string | null;
         source: string | null;
         tags: string[];
         score: number;
+        status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
     }>;
 }

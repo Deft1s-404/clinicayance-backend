@@ -1,0 +1,122 @@
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { GoogleCalendarService } from './google-calendar.service';
+import {
+  GoogleCalendarCreateEventDto,
+  GoogleCalendarDeleteEventDto,
+  GoogleCalendarGetEventQueryDto,
+  GoogleCalendarListEventsDto,
+  GoogleCalendarUpdateEventDto
+} from './dto/google-calendar-event.dto';
+
+type AuthenticatedUser = {
+  userId: string;
+  email: string;
+};
+
+/**
+ * Controller responsável por expor endpoints REST para operar o Google Calendar via backend.
+ * Cada rota usa o usuário autenticado (JWT) e delega as chamadas ao GoogleCalendarService.
+ */
+@Controller('google/calendar')
+export class GoogleCalendarController {
+  constructor(private readonly googleCalendarService: GoogleCalendarService) {}
+
+  /**
+   * Lista eventos do calendário informado usando os mesmos filtros da API do Google.
+   */
+  @Get('events')
+  async listEvents(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: GoogleCalendarListEventsDto
+  ) {
+    return this.googleCalendarService.listEvents(user.userId, {
+      calendarId: query.calendarId,
+      timeMin: query.timeMin,
+      timeMax: query.timeMax,
+      pageToken: query.pageToken,
+      syncToken: query.syncToken,
+      singleEvents: true,
+      orderBy: 'startTime'
+    });
+  }
+
+  /**
+   * Recupera os dados de um evento específico.
+   */
+  @Get('events/:eventId')
+  async getEvent(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('eventId') eventId: string,
+    @Query() query: GoogleCalendarGetEventQueryDto
+  ) {
+    return this.googleCalendarService.getEvent(user.userId, {
+      calendarId: query.calendarId,
+      eventId
+    });
+  }
+
+  /**
+   * Cria um novo evento no calendário do usuário.
+   */
+  @Post('events')
+  async createEvent(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: GoogleCalendarCreateEventDto
+  ) {
+    return this.googleCalendarService.insertEvent(user.userId, {
+      calendarId: dto.calendarId,
+      requestBody: {
+        start: dto.start,
+        end: dto.end,
+        summary: dto.summary,
+        description: dto.description,
+        attendees: dto.attendees,
+        location: dto.location
+      }
+    });
+  }
+
+  /**
+   * Atualiza parcialmente um evento já existente.
+   */
+  @Patch('events/:eventId')
+  async updateEvent(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('eventId') eventId: string,
+    @Body() dto: GoogleCalendarUpdateEventDto
+  ) {
+    return this.googleCalendarService.patchEvent(user.userId, {
+      calendarId: dto.calendarId,
+      eventId,
+      requestBody: {
+        start: dto.start,
+        end: dto.end,
+        summary: dto.summary,
+        description: dto.description,
+        attendees: dto.attendees,
+        location: dto.location
+      }
+    });
+  }
+
+  /**
+   * Remove um evento do calendário do usuário.
+   */
+  @Delete('events/:eventId')
+  async deleteEvent(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('eventId') eventId: string,
+    @Body() dto: GoogleCalendarDeleteEventDto
+  ) {
+    await this.googleCalendarService.deleteEvent(user.userId, {
+      calendarId: dto.calendarId,
+      eventId
+    });
+
+    return {
+      message: 'Evento removido com sucesso.'
+    };
+  }
+}

@@ -11,37 +11,37 @@ export declare class AppointmentsService {
     constructor(appointmentsRepository: AppointmentsRepository, clientsService: ClientsService, funnelEventsService: FunnelEventsService);
     list(query: AppointmentQuery): Promise<PaginatedAppointments>;
     findById(id: string): Promise<{
-        client: {
+        payments: {
             id: string;
-            status: import(".prisma/client").$Enums.ClientStatus;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
+            status: import(".prisma/client").$Enums.PaymentStatus;
+            clientId: string;
+            value: import("@prisma/client/runtime/library").Decimal;
+            method: string;
+            pixTxid: string | null;
+            comprovanteUrl: string | null;
+            appointmentId: string;
+        }[];
+        client: {
+            id: string;
             email: string | null;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
             phone: string | null;
             source: string | null;
             tags: string[];
             score: number;
+            status: import(".prisma/client").$Enums.ClientStatus;
             notes: string | null;
         };
-        payments: {
-            id: string;
-            appointmentId: string;
-            clientId: string;
-            value: import("@prisma/client/runtime/library").Decimal;
-            method: string;
-            status: import(".prisma/client").$Enums.PaymentStatus;
-            pixTxid: string | null;
-            comprovanteUrl: string | null;
-            createdAt: Date;
-            updatedAt: Date;
-        }[];
     } & {
         id: string;
-        clientId: string;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
+        clientId: string;
         procedure: string;
         start: Date;
         end: Date;

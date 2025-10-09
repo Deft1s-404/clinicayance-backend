@@ -54,6 +54,8 @@ model User {
   role      String   @default("admin")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  googleAccount   GoogleAccount?
+  googleOAuthStates GoogleOAuthState[]
 }
 
 model Client {
@@ -158,4 +160,39 @@ model CampaignLog {
   campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   @@index([campaignId])
+}
+
+model GoogleAccount {
+  id           String    @id @default(cuid())
+  userId       String    @unique
+  googleUserId String?
+  email        String?
+  refreshToken String?
+  accessToken  String?
+  tokenType    String?
+  scope        String?
+  expiryDate   DateTime?
+  rawTokens    Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([googleUserId])
+  @@index([email])
+}
+
+model GoogleOAuthState {
+  id          String    @id @default(cuid())
+  state       String    @unique
+  userId      String
+  redirectUri String
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  consumedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }

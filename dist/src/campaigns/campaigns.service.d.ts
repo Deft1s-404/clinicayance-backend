@@ -16,10 +16,10 @@ export declare class CampaignsService {
         }[];
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.CampaignStatus;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
+        status: import(".prisma/client").$Enums.CampaignStatus;
         channel: string;
         message: string;
         scheduledAt: Date | null;

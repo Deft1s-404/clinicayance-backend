@@ -28,66 +28,66 @@ export declare class PaymentsRepository {
     constructor(prisma: PrismaService);
     findMany(query: PaymentsQuery): Promise<PaginatedPayments>;
     findById(id: string): Prisma.Prisma__PaymentClient<({
-        appointment: {
-            client: {
-                id: string;
-                status: import(".prisma/client").$Enums.ClientStatus;
-                createdAt: Date;
-                updatedAt: Date;
-                name: string;
-                email: string | null;
-                phone: string | null;
-                source: string | null;
-                tags: string[];
-                score: number;
-                notes: string | null;
-            };
-        } & {
-            id: string;
-            clientId: string;
-            status: import(".prisma/client").$Enums.AppointmentStatus;
-            createdAt: Date;
-            updatedAt: Date;
-            procedure: string;
-            start: Date;
-            end: Date;
-        };
         client: {
             id: string;
-            status: import(".prisma/client").$Enums.ClientStatus;
+            email: string | null;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
-            email: string | null;
             phone: string | null;
             source: string | null;
             tags: string[];
             score: number;
+            status: import(".prisma/client").$Enums.ClientStatus;
             notes: string | null;
+        };
+        appointment: {
+            client: {
+                id: string;
+                email: string | null;
+                name: string;
+                createdAt: Date;
+                updatedAt: Date;
+                phone: string | null;
+                source: string | null;
+                tags: string[];
+                score: number;
+                status: import(".prisma/client").$Enums.ClientStatus;
+                notes: string | null;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import(".prisma/client").$Enums.AppointmentStatus;
+            clientId: string;
+            procedure: string;
+            start: Date;
+            end: Date;
         };
     } & {
         id: string;
-        appointmentId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         clientId: string;
         value: Prisma.Decimal;
         method: string;
-        status: import(".prisma/client").$Enums.PaymentStatus;
         pixTxid: string | null;
         comprovanteUrl: string | null;
-        createdAt: Date;
-        updatedAt: Date;
+        appointmentId: string;
     }) | null, null, import("@prisma/client/runtime/library").DefaultArgs>;
     findByPixTxid(pixTxid: string): Prisma.Prisma__PaymentClient<{
         id: string;
-        appointmentId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         clientId: string;
         value: Prisma.Decimal;
         method: string;
-        status: import(".prisma/client").$Enums.PaymentStatus;
         pixTxid: string | null;
         comprovanteUrl: string | null;
-        createdAt: Date;
-        updatedAt: Date;
+        appointmentId: string;
     } | null, null, import("@prisma/client/runtime/library").DefaultArgs>;
     create(data: Prisma.PaymentCreateInput): Promise<Payment>;
     update(id: string, data: Prisma.PaymentUpdateInput): Promise<Payment>;

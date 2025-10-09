@@ -9,67 +9,67 @@ export declare class AppointmentsController {
     constructor(appointmentsService: AppointmentsService);
     list(query: PaginationQueryDto, status?: AppointmentStatus, start?: string, end?: string): Promise<PaginatedAppointments>;
     find(id: string): Promise<{
-        client: {
+        payments: {
             id: string;
-            status: import(".prisma/client").$Enums.ClientStatus;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
+            status: import(".prisma/client").$Enums.PaymentStatus;
+            clientId: string;
+            value: import("@prisma/client/runtime/library").Decimal;
+            method: string;
+            pixTxid: string | null;
+            comprovanteUrl: string | null;
+            appointmentId: string;
+        }[];
+        client: {
+            id: string;
             email: string | null;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
             phone: string | null;
             source: string | null;
             tags: string[];
             score: number;
+            status: import(".prisma/client").$Enums.ClientStatus;
             notes: string | null;
         };
-        payments: {
-            id: string;
-            appointmentId: string;
-            clientId: string;
-            value: import("@prisma/client/runtime/library").Decimal;
-            method: string;
-            status: import(".prisma/client").$Enums.PaymentStatus;
-            pixTxid: string | null;
-            comprovanteUrl: string | null;
-            createdAt: Date;
-            updatedAt: Date;
-        }[];
     } & {
         id: string;
-        clientId: string;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
+        clientId: string;
         procedure: string;
         start: Date;
         end: Date;
     }>;
     create(dto: CreateAppointmentDto): Promise<{
         id: string;
-        clientId: string;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
+        clientId: string;
         procedure: string;
         start: Date;
         end: Date;
     }>;
     update(id: string, dto: UpdateAppointmentDto): Promise<{
         id: string;
-        clientId: string;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
+        clientId: string;
         procedure: string;
         start: Date;
         end: Date;
     }>;
     remove(id: string): Promise<{
         id: string;
-        clientId: string;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
+        clientId: string;
         procedure: string;
         start: Date;
         end: Date;

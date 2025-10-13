@@ -20,6 +20,80 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
         this.evolutionService = evolutionService;
         this.logger = new common_1.Logger(EvolutionIntegrationService_1.name);
     }
+    async createManagedInstance(userId, instanceName, webhookUrl) {
+        var _a, _b, _c, _d, _e;
+        const existing = await this.evolutionModel().findFirst({
+            where: {
+                userId,
+                metadata: {
+                    path: ['displayName'],
+                    equals: instanceName
+                }
+            }
+        });
+        if (existing) {
+            throw new common_1.BadRequestException('Instancia Evolution com esse nome ja existe.');
+        }
+        const payload = this.buildManagedInstancePayload(webhookUrl);
+        const created = await this.evolutionService.createInstance(instanceName, payload);
+        const summary = await this.evolutionService
+            .fetchInstance(created.id, (_a = created.providerId) !== null && _a !== void 0 ? _a : null)
+            .catch(() => null);
+        const providerInstanceId = (_c = (_b = summary === null || summary === void 0 ? void 0 : summary.id) !== null && _b !== void 0 ? _b : created.providerId) !== null && _c !== void 0 ? _c : null;
+        const number = this.extractPhoneFromSummary(summary);
+        const providerStatus = (_d = summary === null || summary === void 0 ? void 0 : summary.connectionStatus) !== null && _d !== void 0 ? _d : 'created';
+        const metadata = {
+            lastState: providerStatus,
+            lastStatusAt: new Date().toISOString(),
+            providerId: providerInstanceId,
+            webhookUrl,
+            number: number !== null && number !== void 0 ? number : null
+        };
+        await this.evolutionModel().create({
+            data: {
+                userId,
+                instanceId: created.id,
+                providerInstanceId,
+                status: 'disconnected',
+                metadata
+            }
+        });
+        return {
+            instanceId: created.id,
+            status: 'disconnected',
+            number,
+            name: (_e = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _e !== void 0 ? _e : instanceName,
+            providerStatus,
+            pairingCode: null
+        };
+    }
+    async listManagedInstances(userId) {
+        const records = await this.evolutionModel().findMany({
+            where: { userId },
+            orderBy: { createdAt: 'asc' }
+        });
+        if (!records.length) {
+            return [];
+        }
+        const sessions = await Promise.all(records.map(async (record) => {
+            try {
+                return await this.getStatus(userId, record.instanceId);
+            }
+            catch (error) {
+                this.logger.warn(`Falha ao atualizar status da instancia Evolution ${record.instanceId}: ${error}`);
+                return {
+                    instanceId: record.instanceId,
+                    status: 'disconnected',
+                    number: this.extractPhoneFromMetadata(record.metadata),
+                    name: this.extractNameFromMetadata(record.metadata),
+                    providerStatus: 'unknown',
+                    pairingCode: this.extractPairingCodeFromMetadata(record.metadata),
+                    qrCode: this.readQrFromMetadata(record.metadata)
+                };
+            }
+        }));
+        return sessions.filter((session) => session !== null && session !== undefined);
+    }
     async startSession(userId, phoneNumber) {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5;
         const current = await this.findLatestInstance(userId);
@@ -257,7 +331,7 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
             return {
                 instanceId: current.instanceId,
                 status: 'disconnected',
-                qrCode: storedQr
+                qrCode: storedQr,
             };
         }
         const providerState = (_d = (_c = (_b = (_a = state === null || state === void 0 ? void 0 : state.instance) === null || _a === void 0 ? void 0 : _a.state) !== null && _b !== void 0 ? _b : state === null || state === void 0 ? void 0 : state.status) !== null && _c !== void 0 ? _c : summary === null || summary === void 0 ? void 0 : summary.connectionStatus) !== null && _d !== void 0 ? _d : 'unknown';
@@ -340,8 +414,9 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
         });
     }
     async createFreshSession(userId, phoneNumber) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
-        const created = await this.evolutionService.createInstance(this.buildInstanceName(userId));
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
+        const instanceAlias = this.buildInstanceName(userId);
+        const created = await this.evolutionService.createInstance(instanceAlias);
         const qrPayload = await this.evolutionService.getQrCode(created.id, phoneNumber !== null && phoneNumber !== void 0 ? phoneNumber : undefined);
         const summary = await this.evolutionService
             .fetchInstance(created.id, (_a = created.providerId) !== null && _a !== void 0 ? _a : null)
@@ -355,7 +430,6 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
         const summaryNumber = (_f = (_e = this.extractPhoneFromSummary(summary)) !== null && _e !== void 0 ? _e : phoneNumber) !== null && _f !== void 0 ? _f : null;
         const providerInstanceId = (_h = (_g = summary === null || summary === void 0 ? void 0 : summary.id) !== null && _g !== void 0 ? _g : created.providerId) !== null && _h !== void 0 ? _h : null;
         const metadata = {
-            displayName: (_j = created.name) !== null && _j !== void 0 ? _j : null,
             lastQrSvg: svg,
             lastQrBase64: base64,
             lastQrCode: code,
@@ -364,12 +438,12 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
             lastQrCount: count,
             lastQrAt: new Date().toISOString(),
             providerId: providerInstanceId,
-            token: (_k = created.token) !== null && _k !== void 0 ? _k : null,
+            token: (_j = created.token) !== null && _j !== void 0 ? _j : null,
             rawInstance: created.raw ? created.raw : null,
-            connectionStatus: (_l = summary === null || summary === void 0 ? void 0 : summary.connectionStatus) !== null && _l !== void 0 ? _l : null,
-            ownerJid: (_m = summary === null || summary === void 0 ? void 0 : summary.ownerJid) !== null && _m !== void 0 ? _m : null,
-            profileName: (_o = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _o !== void 0 ? _o : null,
-            profilePicUrl: (_p = summary === null || summary === void 0 ? void 0 : summary.profilePicUrl) !== null && _p !== void 0 ? _p : null,
+            connectionStatus: (_k = summary === null || summary === void 0 ? void 0 : summary.connectionStatus) !== null && _k !== void 0 ? _k : null,
+            ownerJid: (_l = summary === null || summary === void 0 ? void 0 : summary.ownerJid) !== null && _l !== void 0 ? _l : null,
+            profileName: (_m = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _m !== void 0 ? _m : null,
+            profilePicUrl: (_o = summary === null || summary === void 0 ? void 0 : summary.profilePicUrl) !== null && _o !== void 0 ? _o : null,
             number: summaryNumber,
             requestedNumber: phoneNumber !== null && phoneNumber !== void 0 ? phoneNumber : summaryNumber
         };
@@ -394,7 +468,7 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
                 count
             },
             number: summaryNumber,
-            name: (_r = (_q = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _q !== void 0 ? _q : created.name) !== null && _r !== void 0 ? _r : null,
+            name: (_q = (_p = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _p !== void 0 ? _p : created.name) !== null && _q !== void 0 ? _q : null,
             pairingCode: pairingCode !== null && pairingCode !== void 0 ? pairingCode : null
         };
     }
@@ -428,6 +502,38 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
             status,
             pairingCode,
             count
+        };
+    }
+    async findInstanceByDisplayName(userId, displayName) {
+        const record = await this.evolutionModel().findFirst({
+            where: {
+                userId,
+                metadata: {
+                    path: ['displayName'],
+                    equals: displayName
+                }
+            }
+        });
+        return record;
+    }
+    buildManagedInstancePayload(webhookUrl) {
+        var _a;
+        const headers = {};
+        const webhookAuthorization = process.env.EVOLUTION_WEBHOOK_AUTHORIZATION;
+        if (webhookAuthorization && webhookAuthorization.length > 0) {
+            headers.authorization = webhookAuthorization;
+        }
+        headers['Content-Type'] = (_a = process.env.EVOLUTION_WEBHOOK_CONTENT_TYPE) !== null && _a !== void 0 ? _a : 'application/json';
+        return {
+            integration: 'WHATSAPP-BAILEYS',
+            groupsIgnore: true,
+            webhook: {
+                url: webhookUrl,
+                byEvents: true,
+                base64: true,
+                headers,
+                events: ['MESSAGES_UPSERT']
+            }
         };
     }
     async safeGetState(instanceId) {

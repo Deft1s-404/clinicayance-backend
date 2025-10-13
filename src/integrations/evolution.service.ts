@@ -77,25 +77,29 @@ export class EvolutionService {
     this.defaultToken = token?.trim() || undefined;
   }
 
-  async createInstance(instanceName: string): Promise<EvolutionCreatedInstance> {
+  async createInstance(
+    instanceName: string,
+    config?: Record<string, unknown>
+  ): Promise<EvolutionCreatedInstance> {
     const payload: Record<string, unknown> = {
       instanceName,
-      qrcode: true
+      qrcode: true,
+      ...(config ?? {})
     };
 
-    if (this.defaultIntegration) {
+    if (!('integration' in payload) && this.defaultIntegration) {
       payload.integration = this.defaultIntegration;
     }
 
-    if (this.defaultChannel) {
+    if (!('channel' in payload) && this.defaultChannel) {
       payload.channel = this.defaultChannel;
     }
 
-    if (this.defaultTemplate) {
+    if (!('template' in payload) && this.defaultTemplate) {
       payload.template = this.defaultTemplate;
     }
 
-    if (this.defaultToken) {
+    if (!('token' in payload) && this.defaultToken) {
       payload.token = this.defaultToken;
     }
 

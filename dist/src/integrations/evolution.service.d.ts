@@ -44,7 +44,7 @@ export declare class EvolutionService {
     private readonly defaultChannel?;
     private readonly defaultToken?;
     constructor(configService: ConfigService);
-    createInstance(instanceName: string): Promise<EvolutionCreatedInstance>;
+    createInstance(instanceName: string, config?: Record<string, unknown>): Promise<EvolutionCreatedInstance>;
     getQrCode(instanceId: string, number?: string): Promise<QrCodeResponse>;
     getState(instanceId: string): Promise<InstanceStateResponse>;
     logout(instanceId: string): Promise<void>;

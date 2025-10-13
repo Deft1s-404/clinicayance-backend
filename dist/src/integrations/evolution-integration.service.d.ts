@@ -23,6 +23,8 @@ export declare class EvolutionIntegrationService {
     private readonly evolutionService;
     private readonly logger;
     constructor(prisma: PrismaService, evolutionService: EvolutionService);
+    createManagedInstance(userId: string, instanceName: string, webhookUrl: string): Promise<EvolutionSessionResponse>;
+    listManagedInstances(userId: string): Promise<EvolutionSessionResponse[]>;
     startSession(userId: string, phoneNumber?: string): Promise<EvolutionSessionResponse>;
     refreshQr(userId: string, instanceId: string, phoneNumber?: string): Promise<EvolutionSessionResponse>;
     getStatus(userId: string, instanceId: string): Promise<EvolutionSessionResponse>;
@@ -32,6 +34,8 @@ export declare class EvolutionIntegrationService {
     private findLatestInstance;
     private createFreshSession;
     private fetchQr;
+    private findInstanceByDisplayName;
+    private buildManagedInstancePayload;
     private safeGetState;
     private getOwnedInstance;
     private updateInstance;

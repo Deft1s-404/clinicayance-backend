@@ -33,22 +33,23 @@ let EvolutionService = EvolutionService_1 = class EvolutionService {
         this.defaultChannel = (channel === null || channel === void 0 ? void 0 : channel.trim()) || undefined;
         this.defaultToken = (token === null || token === void 0 ? void 0 : token.trim()) || undefined;
     }
-    async createInstance(instanceName) {
+    async createInstance(instanceName, config) {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         const payload = {
             instanceName,
-            qrcode: true
+            qrcode: true,
+            ...(config !== null && config !== void 0 ? config : {})
         };
-        if (this.defaultIntegration) {
+        if (!('integration' in payload) && this.defaultIntegration) {
             payload.integration = this.defaultIntegration;
         }
-        if (this.defaultChannel) {
+        if (!('channel' in payload) && this.defaultChannel) {
             payload.channel = this.defaultChannel;
         }
-        if (this.defaultTemplate) {
+        if (!('template' in payload) && this.defaultTemplate) {
             payload.template = this.defaultTemplate;
         }
-        if (this.defaultToken) {
+        if (!('token' in payload) && this.defaultToken) {
             payload.token = this.defaultToken;
         }
         const response = await this.request('/instance/create', {

@@ -1,4 +1,10 @@
-import { HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Injectable,
+  Logger,
+  NotFoundException
+} from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { EvolutionInstanceSummary, EvolutionService } from './evolution.service';
@@ -46,6 +52,101 @@ export class EvolutionIntegrationService {
     private readonly prisma: PrismaService,
     private readonly evolutionService: EvolutionService
   ) {}
+
+  async createManagedInstance(
+    userId: string,
+    instanceName: string,
+    webhookUrl: string
+  ): Promise<EvolutionSessionResponse> {
+    const existing = await this.evolutionModel().findFirst({
+      where: {
+        userId,
+        metadata: {
+          path: ['displayName'],
+          equals: instanceName
+        }
+      }
+    });
+
+    if (existing) {
+      throw new BadRequestException('Instancia Evolution com esse nome ja existe.');
+    }
+
+    const payload = this.buildManagedInstancePayload(webhookUrl);
+    const created = await this.evolutionService.createInstance(instanceName, payload);
+
+    const summary = await this.evolutionService
+      .fetchInstance(created.id, created.providerId ?? null)
+      .catch(() => null);
+
+    const providerInstanceId = summary?.id ?? created.providerId ?? null;
+    const number = this.extractPhoneFromSummary(summary);
+    const providerStatus = summary?.connectionStatus ?? 'created';
+
+    const metadata: JsonObject = {
+      lastState: providerStatus,
+      lastStatusAt: new Date().toISOString(),
+      providerId: providerInstanceId,
+      webhookUrl,
+      number: number ?? null
+    };
+
+    await this.evolutionModel().create({
+      data: {
+        userId,
+        instanceId: created.id,
+        providerInstanceId,
+        status: 'disconnected',
+        metadata
+      }
+    });
+
+    return {
+      instanceId: created.id,
+      status: 'disconnected',
+      number,
+      name: summary?.profileName ?? instanceName,
+      providerStatus,
+      pairingCode: null
+    };
+  }
+
+  async listManagedInstances(userId: string): Promise<EvolutionSessionResponse[]> {
+    const records = await this.evolutionModel().findMany({
+      where: { userId },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    if (!records.length) {
+      return [];
+    }
+
+    const sessions = await Promise.all(
+      records.map(async (record) => {
+        try {
+          return await this.getStatus(userId, record.instanceId);
+        } catch (error) {
+          this.logger.warn(
+            `Falha ao atualizar status da instancia Evolution ${record.instanceId}: ${error}`
+          );
+
+          return {
+            instanceId: record.instanceId,
+            status: 'disconnected',
+            number: this.extractPhoneFromMetadata(record.metadata),
+            name: this.extractNameFromMetadata(record.metadata),
+            providerStatus: 'unknown',
+            pairingCode: this.extractPairingCodeFromMetadata(record.metadata),
+            qrCode: this.readQrFromMetadata(record.metadata)
+          };
+        }
+      })
+    );
+
+    return sessions.filter(
+      (session): session is EvolutionSessionResponse => session !== null && session !== undefined
+    );
+  }
 
   async startSession(userId: string, phoneNumber?: string): Promise<EvolutionSessionResponse> {
     const current = await this.findLatestInstance(userId);
@@ -242,16 +343,16 @@ export class EvolutionIntegrationService {
       } as JsonObject
     });
 
-    return {
-      instanceId,
-      status,
-      number: summaryNumber ?? this.extractPhoneFromMetadata(instance.metadata),
-      name: summary?.profileName ?? this.extractNameFromMetadata(instance.metadata),
-      qrCode,
-      providerStatus: providerState,
-      message: state.message ?? null,
-      pairingCode: this.extractPairingCodeFromMetadata(instance.metadata)
-    };
+  return {
+    instanceId,
+    status,
+    number: summaryNumber ?? this.extractPhoneFromMetadata(instance.metadata),
+    name: summary?.profileName ?? this.extractNameFromMetadata(instance.metadata),
+    qrCode,
+    providerStatus: providerState,
+    message: state.message ?? null,
+    pairingCode: this.extractPairingCodeFromMetadata(instance.metadata)
+  };
   }
 
   async disconnect(userId: string, instanceId: string): Promise<EvolutionSessionResponse> {
@@ -276,11 +377,11 @@ export class EvolutionIntegrationService {
       } as JsonObject
     });
 
-    return {
-      instanceId,
-      status: 'disconnected',
-      pairingCode: null
-    };
+  return {
+    instanceId,
+    status: 'disconnected',
+    pairingCode: null
+  };
   }
 
   async removeInstance(userId: string, instanceId: string): Promise<EvolutionSessionResponse> {
@@ -300,11 +401,11 @@ export class EvolutionIntegrationService {
       where: { id: instance.id }
     });
 
-    return {
-      instanceId,
-      status: 'disconnected',
-      pairingCode: null
-    };
+  return {
+    instanceId,
+    status: 'disconnected',
+    pairingCode: null
+  };
   }
 
   async getCurrentSession(userId: string): Promise<EvolutionSessionResponse | null> {
@@ -336,7 +437,7 @@ export class EvolutionIntegrationService {
       return {
         instanceId: current.instanceId,
         status: 'disconnected',
-        qrCode: storedQr
+        qrCode: storedQr,
       };
     }
 
@@ -443,7 +544,8 @@ export class EvolutionIntegrationService {
     userId: string,
     phoneNumber?: string
   ): Promise<EvolutionSessionResponse> {
-    const created = await this.evolutionService.createInstance(this.buildInstanceName(userId));
+    const instanceAlias = this.buildInstanceName(userId);
+    const created = await this.evolutionService.createInstance(instanceAlias);
     const qrPayload = await this.evolutionService.getQrCode(created.id, phoneNumber ?? undefined);
     const summary = await this.evolutionService
       .fetchInstance(created.id, created.providerId ?? null)
@@ -459,7 +561,6 @@ export class EvolutionIntegrationService {
     const providerInstanceId = summary?.id ?? created.providerId ?? null;
 
     const metadata: JsonObject = {
-      displayName: created.name ?? null,
       lastQrSvg: svg,
       lastQrBase64: base64,
       lastQrCode: code,
@@ -544,6 +645,45 @@ export class EvolutionIntegrationService {
       status,
       pairingCode,
       count
+    };
+  }
+
+  private async findInstanceByDisplayName(
+    userId: string,
+    displayName: string
+  ): Promise<EvolutionInstanceRecord | null> {
+    const record = await this.evolutionModel().findFirst({
+      where: {
+        userId,
+        metadata: {
+          path: ['displayName'],
+          equals: displayName
+        }
+      }
+    });
+
+    return record as EvolutionInstanceRecord | null;
+  }
+
+  private buildManagedInstancePayload(webhookUrl: string): Record<string, unknown> {
+    const headers: Record<string, string> = {};
+    const webhookAuthorization = process.env.EVOLUTION_WEBHOOK_AUTHORIZATION;
+    if (webhookAuthorization && webhookAuthorization.length > 0) {
+      headers.authorization = webhookAuthorization;
+    }
+
+    headers['Content-Type'] = process.env.EVOLUTION_WEBHOOK_CONTENT_TYPE ?? 'application/json';
+
+    return {
+      integration: 'WHATSAPP-BAILEYS',
+      groupsIgnore: true,
+      webhook: {
+        url: webhookUrl,
+        byEvents: true,
+        base64: true,
+        headers,
+        events: ['MESSAGES_UPSERT']
+      }
     };
   }
 
@@ -662,6 +802,7 @@ export class EvolutionIntegrationService {
   private evolutionModel() {
     return (this.prisma as any).evolutionInstance as {
       findFirst: (...args: any[]) => Promise<EvolutionInstanceRecord | null>;
+      findMany: (...args: any[]) => Promise<EvolutionInstanceRecord[]>;
       create: (...args: any[]) => Promise<EvolutionInstanceRecord>;
       findUnique: (...args: any[]) => Promise<EvolutionInstanceRecord | null>;
       update: (...args: any[]) => Promise<EvolutionInstanceRecord>;
@@ -783,3 +924,4 @@ export class EvolutionIntegrationService {
     return `clinic-${suffix}`;
   }
 }
+

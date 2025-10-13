@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const evolution_integration_service_1 = require("./evolution-integration.service");
 const evolution_generate_qr_dto_1 = require("./dto/evolution-generate-qr.dto");
+const evolution_create_instance_dto_1 = require("./dto/evolution-create-instance.dto");
 let EvolutionController = class EvolutionController {
     constructor(evolutionIntegrationService) {
         this.evolutionIntegrationService = evolutionIntegrationService;
@@ -24,8 +25,14 @@ let EvolutionController = class EvolutionController {
     getCurrent(user) {
         return this.evolutionIntegrationService.getCurrentSession(user.userId);
     }
+    listInstances(user) {
+        return this.evolutionIntegrationService.listManagedInstances(user.userId);
+    }
     startSession(user, dto) {
         return this.evolutionIntegrationService.startSession(user.userId, dto.number);
+    }
+    createInstance(user, dto) {
+        return this.evolutionIntegrationService.createManagedInstance(user.userId, dto.instanceName, dto.webhookUrl);
     }
     refreshQr(user, instanceId, dto) {
         return this.evolutionIntegrationService.refreshQr(user.userId, instanceId, dto.number);
@@ -49,6 +56,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], EvolutionController.prototype, "getCurrent", null);
 __decorate([
+    (0, common_1.Get)('instances/list'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], EvolutionController.prototype, "listInstances", null);
+__decorate([
     (0, common_1.Post)('instances'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Body)()),
@@ -56,6 +70,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, evolution_generate_qr_dto_1.EvolutionGenerateQrDto]),
     __metadata("design:returntype", Promise)
 ], EvolutionController.prototype, "startSession", null);
+__decorate([
+    (0, common_1.Post)('instances/create'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, evolution_create_instance_dto_1.EvolutionCreateInstanceDto]),
+    __metadata("design:returntype", Promise)
+], EvolutionController.prototype, "createInstance", null);
 __decorate([
     (0, common_1.Post)('instances/:instanceId/qr'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),

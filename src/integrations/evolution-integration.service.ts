@@ -6,6 +6,7 @@ import { EvolutionInstanceSummary, EvolutionService } from './evolution.service'
 interface EvolutionQrPayload {
   svg: string | null;
   base64: string | null;
+  code?: string | null;
   status: string | null;
   pairingCode?: string | null;
   count?: number | null;
@@ -90,6 +91,8 @@ export class EvolutionIntegrationService {
           );
 
           metadataPatch.lastPairingCode = qr.pairingCode ?? null;
+          metadataPatch.lastQrCode = qr.code ?? null;
+          metadataPatch.lastQrCount = typeof qr.count === 'number' ? qr.count : null;
 
           await this.updateInstance(current, {
             status: 'pending',
@@ -117,6 +120,8 @@ export class EvolutionIntegrationService {
         );
 
         metadataPatch.lastPairingCode = qr.pairingCode ?? null;
+        metadataPatch.lastQrCode = qr.code ?? null;
+        metadataPatch.lastQrCount = typeof qr.count === 'number' ? qr.count : null;
 
         await this.updateInstance(current, {
           status: 'pending',
@@ -383,6 +388,9 @@ export class EvolutionIntegrationService {
         ));
 
       metadataPatch.lastPairingCode = qrPayload?.pairingCode ?? null;
+      metadataPatch.lastQrCode = qrPayload?.code ?? null;
+      metadataPatch.lastQrCount =
+        typeof qrPayload?.count === 'number' ? qrPayload.count : null;
       metadataPatch.requestedNumber = requestedNumber ?? summaryNumber ?? null;
 
       await this.updateInstance(current, {
@@ -441,10 +449,12 @@ export class EvolutionIntegrationService {
       .fetchInstance(created.id, created.providerId ?? null)
       .catch(() => null);
 
-    const base64 = qrPayload.base64 ?? qrPayload.code ?? null;
+    const base64 = typeof qrPayload.base64 === 'string' ? qrPayload.base64 : null;
     const svg = qrPayload.qrCode ?? null;
     const status = qrPayload.status ?? null;
     const pairingCode = qrPayload.pairingCode ?? null;
+    const code = typeof qrPayload.code === 'string' ? qrPayload.code : null;
+    const count = typeof qrPayload.count === 'number' ? qrPayload.count : null;
     const summaryNumber = this.extractPhoneFromSummary(summary) ?? phoneNumber ?? null;
     const providerInstanceId = summary?.id ?? created.providerId ?? null;
 
@@ -452,8 +462,10 @@ export class EvolutionIntegrationService {
       displayName: created.name ?? null,
       lastQrSvg: svg,
       lastQrBase64: base64,
+      lastQrCode: code,
       lastQrStatus: status,
       lastPairingCode: pairingCode,
+      lastQrCount: count,
       lastQrAt: new Date().toISOString(),
       providerId: providerInstanceId,
       token: created.token ?? null,
@@ -482,9 +494,10 @@ export class EvolutionIntegrationService {
       qrCode: {
         svg,
         base64,
+        code,
         status,
         pairingCode,
-        count: typeof qrPayload.count === 'number' ? qrPayload.count : null
+        count
       },
       number: summaryNumber,
       name: summary?.profileName ?? created.name ?? null,
@@ -502,10 +515,11 @@ export class EvolutionIntegrationService {
       phoneNumber ?? undefined
     );
 
-    const base64 = qrPayload.base64 ?? qrPayload.code ?? null;
+    const base64 = typeof qrPayload.base64 === 'string' ? qrPayload.base64 : null;
     const svg = qrPayload.qrCode ?? null;
     const status = qrPayload.status ?? null;
     const pairingCode = qrPayload.pairingCode ?? null;
+    const code = typeof qrPayload.code === 'string' ? qrPayload.code : null;
     const count = typeof qrPayload.count === 'number' ? qrPayload.count : null;
 
     await this.updateInstance(instance, {
@@ -513,8 +527,10 @@ export class EvolutionIntegrationService {
       metadata: {
         lastQrSvg: svg,
         lastQrBase64: base64,
+        lastQrCode: code,
         lastQrStatus: status,
         lastPairingCode: pairingCode,
+        lastQrCount: count,
         requestedNumber: phoneNumber ?? this.extractRequestedNumberFromMetadata(instance.metadata) ?? null,
         lastQrAt: new Date().toISOString()
       } as JsonObject,
@@ -524,6 +540,7 @@ export class EvolutionIntegrationService {
     return {
       svg,
       base64,
+      code,
       status,
       pairingCode,
       count
@@ -605,6 +622,9 @@ export class EvolutionIntegrationService {
     const base64Raw = record['lastQrBase64'];
     const svgRaw = record['lastQrSvg'];
     const statusRaw = record['lastQrStatus'];
+    const codeRaw = record['lastQrCode'];
+    const pairingRaw = record['lastPairingCode'];
+    const countRaw = record['lastQrCount'];
 
     const base64Value =
       typeof base64Raw === 'string' && base64Raw.length > 0 ? (base64Raw as string) : null;
@@ -612,15 +632,30 @@ export class EvolutionIntegrationService {
       typeof svgRaw === 'string' && svgRaw.length > 0 ? (svgRaw as string) : null;
     const statusValue =
       typeof statusRaw === 'string' && statusRaw.length > 0 ? (statusRaw as string) : 'pending';
+    const codeValue =
+      typeof codeRaw === 'string' && codeRaw.length > 0 ? (codeRaw as string) : null;
+    const pairingCodeValue =
+      typeof pairingRaw === 'string' && pairingRaw.length > 0 ? (pairingRaw as string) : null;
+    let countValue: number | null = null;
 
-    if (!base64Value && !svgValue) {
+    if (typeof countRaw === 'number') {
+      countValue = countRaw;
+    } else if (typeof countRaw === 'string') {
+      const parsed = Number(countRaw);
+      countValue = Number.isFinite(parsed) ? parsed : null;
+    }
+
+    if (!base64Value && !svgValue && !codeValue) {
       return null;
     }
 
     return {
-      base64: base64Value ?? '',
-      svg: svgValue ?? '',
-      status: statusValue
+      base64: base64Value,
+      svg: svgValue,
+      code: codeValue,
+      status: statusValue,
+      pairingCode: pairingCodeValue,
+      count: countValue
     };
   }
 

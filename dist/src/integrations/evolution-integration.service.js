@@ -21,7 +21,7 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
         this.logger = new common_1.Logger(EvolutionIntegrationService_1.name);
     }
     async startSession(userId, phoneNumber) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5;
         const current = await this.findLatestInstance(userId);
         if (current) {
             const providerInstanceId = this.resolveProviderInstanceId(current);
@@ -49,40 +49,44 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
                     await this.safeLogout(current.instanceId);
                     const qr = await this.fetchQr(current, (_p = (_o = summary === null || summary === void 0 ? void 0 : summary.id) !== null && _o !== void 0 ? _o : providerInstanceId) !== null && _p !== void 0 ? _p : null, requestedNumber !== null && requestedNumber !== void 0 ? requestedNumber : null);
                     metadataPatch.lastPairingCode = (_q = qr.pairingCode) !== null && _q !== void 0 ? _q : null;
+                    metadataPatch.lastQrCode = (_r = qr.code) !== null && _r !== void 0 ? _r : null;
+                    metadataPatch.lastQrCount = typeof qr.count === 'number' ? qr.count : null;
                     await this.updateInstance(current, {
                         status: 'pending',
                         connectedAt: null,
                         metadata: metadataPatch,
-                        providerInstanceId: (_s = (_r = summary === null || summary === void 0 ? void 0 : summary.id) !== null && _r !== void 0 ? _r : providerInstanceId) !== null && _s !== void 0 ? _s : null
+                        providerInstanceId: (_t = (_s = summary === null || summary === void 0 ? void 0 : summary.id) !== null && _s !== void 0 ? _s : providerInstanceId) !== null && _t !== void 0 ? _t : null
                     });
                     return {
                         instanceId: current.instanceId,
                         status: 'pending',
                         qrCode: qr,
                         number: requestedNumber !== null && requestedNumber !== void 0 ? requestedNumber : null,
-                        name: (_t = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _t !== void 0 ? _t : this.extractNameFromMetadata(current.metadata),
+                        name: (_u = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _u !== void 0 ? _u : this.extractNameFromMetadata(current.metadata),
                         providerStatus: providerState,
-                        message: (_u = state === null || state === void 0 ? void 0 : state.message) !== null && _u !== void 0 ? _u : null,
-                        pairingCode: (_v = qr.pairingCode) !== null && _v !== void 0 ? _v : this.extractPairingCodeFromMetadata(current.metadata)
+                        message: (_v = state === null || state === void 0 ? void 0 : state.message) !== null && _v !== void 0 ? _v : null,
+                        pairingCode: (_w = qr.pairingCode) !== null && _w !== void 0 ? _w : this.extractPairingCodeFromMetadata(current.metadata)
                     };
                 }
-                const qr = await this.fetchQr(current, (_x = (_w = summary === null || summary === void 0 ? void 0 : summary.id) !== null && _w !== void 0 ? _w : providerInstanceId) !== null && _x !== void 0 ? _x : null, requestedNumber !== null && requestedNumber !== void 0 ? requestedNumber : null);
-                metadataPatch.lastPairingCode = (_y = qr.pairingCode) !== null && _y !== void 0 ? _y : null;
+                const qr = await this.fetchQr(current, (_y = (_x = summary === null || summary === void 0 ? void 0 : summary.id) !== null && _x !== void 0 ? _x : providerInstanceId) !== null && _y !== void 0 ? _y : null, requestedNumber !== null && requestedNumber !== void 0 ? requestedNumber : null);
+                metadataPatch.lastPairingCode = (_z = qr.pairingCode) !== null && _z !== void 0 ? _z : null;
+                metadataPatch.lastQrCode = (_0 = qr.code) !== null && _0 !== void 0 ? _0 : null;
+                metadataPatch.lastQrCount = typeof qr.count === 'number' ? qr.count : null;
                 await this.updateInstance(current, {
                     status: 'pending',
                     connectedAt: null,
                     metadata: metadataPatch,
-                    providerInstanceId: (_0 = (_z = summary === null || summary === void 0 ? void 0 : summary.id) !== null && _z !== void 0 ? _z : providerInstanceId) !== null && _0 !== void 0 ? _0 : null
+                    providerInstanceId: (_2 = (_1 = summary === null || summary === void 0 ? void 0 : summary.id) !== null && _1 !== void 0 ? _1 : providerInstanceId) !== null && _2 !== void 0 ? _2 : null
                 });
                 return {
                     instanceId: current.instanceId,
                     status: 'pending',
                     qrCode: qr,
                     number: requestedNumber !== null && requestedNumber !== void 0 ? requestedNumber : null,
-                    name: (_1 = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _1 !== void 0 ? _1 : this.extractNameFromMetadata(current.metadata),
+                    name: (_3 = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _3 !== void 0 ? _3 : this.extractNameFromMetadata(current.metadata),
                     providerStatus: providerState,
-                    message: (_2 = state === null || state === void 0 ? void 0 : state.message) !== null && _2 !== void 0 ? _2 : null,
-                    pairingCode: (_3 = qr.pairingCode) !== null && _3 !== void 0 ? _3 : this.extractPairingCodeFromMetadata(current.metadata)
+                    message: (_4 = state === null || state === void 0 ? void 0 : state.message) !== null && _4 !== void 0 ? _4 : null,
+                    pairingCode: (_5 = qr.pairingCode) !== null && _5 !== void 0 ? _5 : this.extractPairingCodeFromMetadata(current.metadata)
                 };
             }
             else {
@@ -229,7 +233,7 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
         };
     }
     async getCurrentSession(userId) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10;
         const current = await this.findLatestInstance(userId);
         if (!current) {
             return null;
@@ -291,38 +295,41 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
         if (status === 'pending') {
             const qrPayload = storedQr !== null && storedQr !== void 0 ? storedQr : (await this.fetchQr(current, (_v = (_u = summary === null || summary === void 0 ? void 0 : summary.id) !== null && _u !== void 0 ? _u : providerInstanceId) !== null && _v !== void 0 ? _v : null, (_w = requestedNumber !== null && requestedNumber !== void 0 ? requestedNumber : summaryNumber) !== null && _w !== void 0 ? _w : null));
             metadataPatch.lastPairingCode = (_x = qrPayload === null || qrPayload === void 0 ? void 0 : qrPayload.pairingCode) !== null && _x !== void 0 ? _x : null;
-            metadataPatch.requestedNumber = (_y = requestedNumber !== null && requestedNumber !== void 0 ? requestedNumber : summaryNumber) !== null && _y !== void 0 ? _y : null;
+            metadataPatch.lastQrCode = (_y = qrPayload === null || qrPayload === void 0 ? void 0 : qrPayload.code) !== null && _y !== void 0 ? _y : null;
+            metadataPatch.lastQrCount =
+                typeof (qrPayload === null || qrPayload === void 0 ? void 0 : qrPayload.count) === 'number' ? qrPayload.count : null;
+            metadataPatch.requestedNumber = (_z = requestedNumber !== null && requestedNumber !== void 0 ? requestedNumber : summaryNumber) !== null && _z !== void 0 ? _z : null;
             await this.updateInstance(current, {
                 status: 'pending',
                 connectedAt: null,
                 metadata: metadataPatch,
-                providerInstanceId: (_0 = (_z = summary === null || summary === void 0 ? void 0 : summary.id) !== null && _z !== void 0 ? _z : providerInstanceId) !== null && _0 !== void 0 ? _0 : null
+                providerInstanceId: (_1 = (_0 = summary === null || summary === void 0 ? void 0 : summary.id) !== null && _0 !== void 0 ? _0 : providerInstanceId) !== null && _1 !== void 0 ? _1 : null
             });
             return {
                 instanceId: current.instanceId,
                 status: 'pending',
                 qrCode: qrPayload,
-                number: (_1 = requestedNumber !== null && requestedNumber !== void 0 ? requestedNumber : summaryNumber) !== null && _1 !== void 0 ? _1 : this.extractPhoneFromMetadata(current.metadata),
-                name: (_2 = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _2 !== void 0 ? _2 : this.extractNameFromMetadata(current.metadata),
+                number: (_2 = requestedNumber !== null && requestedNumber !== void 0 ? requestedNumber : summaryNumber) !== null && _2 !== void 0 ? _2 : this.extractPhoneFromMetadata(current.metadata),
+                name: (_3 = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _3 !== void 0 ? _3 : this.extractNameFromMetadata(current.metadata),
                 providerStatus: providerState,
-                message: (_3 = state === null || state === void 0 ? void 0 : state.message) !== null && _3 !== void 0 ? _3 : null,
-                pairingCode: (_4 = qrPayload === null || qrPayload === void 0 ? void 0 : qrPayload.pairingCode) !== null && _4 !== void 0 ? _4 : this.extractPairingCodeFromMetadata(current.metadata)
+                message: (_4 = state === null || state === void 0 ? void 0 : state.message) !== null && _4 !== void 0 ? _4 : null,
+                pairingCode: (_5 = qrPayload === null || qrPayload === void 0 ? void 0 : qrPayload.pairingCode) !== null && _5 !== void 0 ? _5 : this.extractPairingCodeFromMetadata(current.metadata)
             };
         }
         await this.updateInstance(current, {
             status: 'disconnected',
             connectedAt: null,
             metadata: metadataPatch,
-            providerInstanceId: (_6 = (_5 = summary === null || summary === void 0 ? void 0 : summary.id) !== null && _5 !== void 0 ? _5 : providerInstanceId) !== null && _6 !== void 0 ? _6 : null
+            providerInstanceId: (_7 = (_6 = summary === null || summary === void 0 ? void 0 : summary.id) !== null && _6 !== void 0 ? _6 : providerInstanceId) !== null && _7 !== void 0 ? _7 : null
         });
         return {
             instanceId: current.instanceId,
             status: 'disconnected',
             qrCode: storedQr,
-            number: (_7 = summaryNumber !== null && summaryNumber !== void 0 ? summaryNumber : this.extractPhoneFromMetadata(current.metadata)) !== null && _7 !== void 0 ? _7 : requestedNumber,
-            name: (_8 = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _8 !== void 0 ? _8 : this.extractNameFromMetadata(current.metadata),
+            number: (_8 = summaryNumber !== null && summaryNumber !== void 0 ? summaryNumber : this.extractPhoneFromMetadata(current.metadata)) !== null && _8 !== void 0 ? _8 : requestedNumber,
+            name: (_9 = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _9 !== void 0 ? _9 : this.extractNameFromMetadata(current.metadata),
             providerStatus: providerState,
-            message: (_9 = state === null || state === void 0 ? void 0 : state.message) !== null && _9 !== void 0 ? _9 : null,
+            message: (_10 = state === null || state === void 0 ? void 0 : state.message) !== null && _10 !== void 0 ? _10 : null,
             pairingCode: this.extractPairingCodeFromMetadata(current.metadata)
         };
     }
@@ -333,32 +340,36 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
         });
     }
     async createFreshSession(userId, phoneNumber) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
         const created = await this.evolutionService.createInstance(this.buildInstanceName(userId));
         const qrPayload = await this.evolutionService.getQrCode(created.id, phoneNumber !== null && phoneNumber !== void 0 ? phoneNumber : undefined);
         const summary = await this.evolutionService
             .fetchInstance(created.id, (_a = created.providerId) !== null && _a !== void 0 ? _a : null)
             .catch(() => null);
-        const base64 = (_c = (_b = qrPayload.base64) !== null && _b !== void 0 ? _b : qrPayload.code) !== null && _c !== void 0 ? _c : null;
-        const svg = (_d = qrPayload.qrCode) !== null && _d !== void 0 ? _d : null;
-        const status = (_e = qrPayload.status) !== null && _e !== void 0 ? _e : null;
-        const pairingCode = (_f = qrPayload.pairingCode) !== null && _f !== void 0 ? _f : null;
-        const summaryNumber = (_h = (_g = this.extractPhoneFromSummary(summary)) !== null && _g !== void 0 ? _g : phoneNumber) !== null && _h !== void 0 ? _h : null;
-        const providerInstanceId = (_k = (_j = summary === null || summary === void 0 ? void 0 : summary.id) !== null && _j !== void 0 ? _j : created.providerId) !== null && _k !== void 0 ? _k : null;
+        const base64 = typeof qrPayload.base64 === 'string' ? qrPayload.base64 : null;
+        const svg = (_b = qrPayload.qrCode) !== null && _b !== void 0 ? _b : null;
+        const status = (_c = qrPayload.status) !== null && _c !== void 0 ? _c : null;
+        const pairingCode = (_d = qrPayload.pairingCode) !== null && _d !== void 0 ? _d : null;
+        const code = typeof qrPayload.code === 'string' ? qrPayload.code : null;
+        const count = typeof qrPayload.count === 'number' ? qrPayload.count : null;
+        const summaryNumber = (_f = (_e = this.extractPhoneFromSummary(summary)) !== null && _e !== void 0 ? _e : phoneNumber) !== null && _f !== void 0 ? _f : null;
+        const providerInstanceId = (_h = (_g = summary === null || summary === void 0 ? void 0 : summary.id) !== null && _g !== void 0 ? _g : created.providerId) !== null && _h !== void 0 ? _h : null;
         const metadata = {
-            displayName: (_l = created.name) !== null && _l !== void 0 ? _l : null,
+            displayName: (_j = created.name) !== null && _j !== void 0 ? _j : null,
             lastQrSvg: svg,
             lastQrBase64: base64,
+            lastQrCode: code,
             lastQrStatus: status,
             lastPairingCode: pairingCode,
+            lastQrCount: count,
             lastQrAt: new Date().toISOString(),
             providerId: providerInstanceId,
-            token: (_m = created.token) !== null && _m !== void 0 ? _m : null,
+            token: (_k = created.token) !== null && _k !== void 0 ? _k : null,
             rawInstance: created.raw ? created.raw : null,
-            connectionStatus: (_o = summary === null || summary === void 0 ? void 0 : summary.connectionStatus) !== null && _o !== void 0 ? _o : null,
-            ownerJid: (_p = summary === null || summary === void 0 ? void 0 : summary.ownerJid) !== null && _p !== void 0 ? _p : null,
-            profileName: (_q = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _q !== void 0 ? _q : null,
-            profilePicUrl: (_r = summary === null || summary === void 0 ? void 0 : summary.profilePicUrl) !== null && _r !== void 0 ? _r : null,
+            connectionStatus: (_l = summary === null || summary === void 0 ? void 0 : summary.connectionStatus) !== null && _l !== void 0 ? _l : null,
+            ownerJid: (_m = summary === null || summary === void 0 ? void 0 : summary.ownerJid) !== null && _m !== void 0 ? _m : null,
+            profileName: (_o = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _o !== void 0 ? _o : null,
+            profilePicUrl: (_p = summary === null || summary === void 0 ? void 0 : summary.profilePicUrl) !== null && _p !== void 0 ? _p : null,
             number: summaryNumber,
             requestedNumber: phoneNumber !== null && phoneNumber !== void 0 ? phoneNumber : summaryNumber
         };
@@ -377,31 +388,35 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
             qrCode: {
                 svg,
                 base64,
+                code,
                 status,
                 pairingCode,
-                count: typeof qrPayload.count === 'number' ? qrPayload.count : null
+                count
             },
             number: summaryNumber,
-            name: (_t = (_s = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _s !== void 0 ? _s : created.name) !== null && _t !== void 0 ? _t : null,
+            name: (_r = (_q = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _q !== void 0 ? _q : created.name) !== null && _r !== void 0 ? _r : null,
             pairingCode: pairingCode !== null && pairingCode !== void 0 ? pairingCode : null
         };
     }
     async fetchQr(instance, providerInstanceId, phoneNumber) {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d;
         const qrPayload = await this.evolutionService.getQrCode(instance.instanceId, phoneNumber !== null && phoneNumber !== void 0 ? phoneNumber : undefined);
-        const base64 = (_b = (_a = qrPayload.base64) !== null && _a !== void 0 ? _a : qrPayload.code) !== null && _b !== void 0 ? _b : null;
-        const svg = (_c = qrPayload.qrCode) !== null && _c !== void 0 ? _c : null;
-        const status = (_d = qrPayload.status) !== null && _d !== void 0 ? _d : null;
-        const pairingCode = (_e = qrPayload.pairingCode) !== null && _e !== void 0 ? _e : null;
+        const base64 = typeof qrPayload.base64 === 'string' ? qrPayload.base64 : null;
+        const svg = (_a = qrPayload.qrCode) !== null && _a !== void 0 ? _a : null;
+        const status = (_b = qrPayload.status) !== null && _b !== void 0 ? _b : null;
+        const pairingCode = (_c = qrPayload.pairingCode) !== null && _c !== void 0 ? _c : null;
+        const code = typeof qrPayload.code === 'string' ? qrPayload.code : null;
         const count = typeof qrPayload.count === 'number' ? qrPayload.count : null;
         await this.updateInstance(instance, {
             status: 'pending',
             metadata: {
                 lastQrSvg: svg,
                 lastQrBase64: base64,
+                lastQrCode: code,
                 lastQrStatus: status,
                 lastPairingCode: pairingCode,
-                requestedNumber: (_f = phoneNumber !== null && phoneNumber !== void 0 ? phoneNumber : this.extractRequestedNumberFromMetadata(instance.metadata)) !== null && _f !== void 0 ? _f : null,
+                lastQrCount: count,
+                requestedNumber: (_d = phoneNumber !== null && phoneNumber !== void 0 ? phoneNumber : this.extractRequestedNumberFromMetadata(instance.metadata)) !== null && _d !== void 0 ? _d : null,
                 lastQrAt: new Date().toISOString()
             },
             providerInstanceId: providerInstanceId !== null && providerInstanceId !== void 0 ? providerInstanceId : this.resolveProviderInstanceId(instance)
@@ -409,6 +424,7 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
         return {
             svg,
             base64,
+            code,
             status,
             pairingCode,
             count
@@ -465,16 +481,32 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
         const base64Raw = record['lastQrBase64'];
         const svgRaw = record['lastQrSvg'];
         const statusRaw = record['lastQrStatus'];
+        const codeRaw = record['lastQrCode'];
+        const pairingRaw = record['lastPairingCode'];
+        const countRaw = record['lastQrCount'];
         const base64Value = typeof base64Raw === 'string' && base64Raw.length > 0 ? base64Raw : null;
         const svgValue = typeof svgRaw === 'string' && svgRaw.length > 0 ? svgRaw : null;
         const statusValue = typeof statusRaw === 'string' && statusRaw.length > 0 ? statusRaw : 'pending';
-        if (!base64Value && !svgValue) {
+        const codeValue = typeof codeRaw === 'string' && codeRaw.length > 0 ? codeRaw : null;
+        const pairingCodeValue = typeof pairingRaw === 'string' && pairingRaw.length > 0 ? pairingRaw : null;
+        let countValue = null;
+        if (typeof countRaw === 'number') {
+            countValue = countRaw;
+        }
+        else if (typeof countRaw === 'string') {
+            const parsed = Number(countRaw);
+            countValue = Number.isFinite(parsed) ? parsed : null;
+        }
+        if (!base64Value && !svgValue && !codeValue) {
             return null;
         }
         return {
-            base64: base64Value !== null && base64Value !== void 0 ? base64Value : '',
-            svg: svgValue !== null && svgValue !== void 0 ? svgValue : '',
-            status: statusValue
+            base64: base64Value,
+            svg: svgValue,
+            code: codeValue,
+            status: statusValue,
+            pairingCode: pairingCodeValue,
+            count: countValue
         };
     }
     evolutionModel() {

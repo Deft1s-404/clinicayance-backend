@@ -3,6 +3,7 @@ import { EvolutionService } from './evolution.service';
 interface EvolutionQrPayload {
     svg: string | null;
     base64: string | null;
+    code?: string | null;
     status: string | null;
     pairingCode?: string | null;
     count?: number | null;

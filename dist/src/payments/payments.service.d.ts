@@ -24,6 +24,12 @@ export declare class PaymentsService {
             score: number;
             status: import(".prisma/client").$Enums.ClientStatus;
             notes: string | null;
+            age: number | null;
+            country: string | null;
+            birthDate: Date | null;
+            language: string | null;
+            intimateAssessmentPhotos: string[];
+            anamnesisResponses: Prisma.JsonValue | null;
         };
         appointment: {
             client: {
@@ -38,6 +44,12 @@ export declare class PaymentsService {
                 score: number;
                 status: import(".prisma/client").$Enums.ClientStatus;
                 notes: string | null;
+                age: number | null;
+                country: string | null;
+                birthDate: Date | null;
+                language: string | null;
+                intimateAssessmentPhotos: string[];
+                anamnesisResponses: Prisma.JsonValue | null;
             };
         } & {
             id: string;

@@ -7,4 +7,10 @@ export declare class GoogleFormsPayloadDto {
     notes?: string;
     tags?: string[];
     stage?: LeadStage;
+    age?: number;
+    country?: string;
+    birthDate?: string;
+    language?: string;
+    intimateAssessmentPhotos?: string[];
+    anamnesisResponses?: Record<string, unknown>;
 }

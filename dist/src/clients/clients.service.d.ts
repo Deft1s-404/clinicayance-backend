@@ -1,4 +1,4 @@
-import { Client } from '@prisma/client';
+import { Client, Prisma } from '@prisma/client';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { ClientsRepository, PaginatedClients } from './clients.repository';
 import { CreateClientDto } from './dto/create-client.dto';
@@ -20,6 +20,12 @@ export declare class ClientsService {
         score: number;
         status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
+        age: number | null;
+        country: string | null;
+        birthDate: Date | null;
+        language: string | null;
+        intimateAssessmentPhotos: string[];
+        anamnesisResponses: Prisma.JsonValue | null;
     } | null>;
     findByPhone(phone: string): Promise<{
         id: string;
@@ -33,6 +39,12 @@ export declare class ClientsService {
         score: number;
         status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
+        age: number | null;
+        country: string | null;
+        birthDate: Date | null;
+        language: string | null;
+        intimateAssessmentPhotos: string[];
+        anamnesisResponses: Prisma.JsonValue | null;
     } | null>;
     create(dto: CreateClientDto): Promise<Client>;
     update(id: string, dto: UpdateClientDto): Promise<Client>;

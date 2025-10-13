@@ -19,6 +19,12 @@ export declare class ClientsController {
         score: number;
         status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
+        age: number | null;
+        country: string | null;
+        birthDate: Date | null;
+        language: string | null;
+        intimateAssessmentPhotos: string[];
+        anamnesisResponses: import("@prisma/client/runtime/library").JsonValue | null;
     }>;
     create(dto: CreateClientDto): Promise<{
         id: string;
@@ -32,6 +38,12 @@ export declare class ClientsController {
         score: number;
         status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
+        age: number | null;
+        country: string | null;
+        birthDate: Date | null;
+        language: string | null;
+        intimateAssessmentPhotos: string[];
+        anamnesisResponses: import("@prisma/client/runtime/library").JsonValue | null;
     }>;
     update(id: string, dto: UpdateClientDto): Promise<{
         id: string;
@@ -45,6 +57,12 @@ export declare class ClientsController {
         score: number;
         status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
+        age: number | null;
+        country: string | null;
+        birthDate: Date | null;
+        language: string | null;
+        intimateAssessmentPhotos: string[];
+        anamnesisResponses: import("@prisma/client/runtime/library").JsonValue | null;
     }>;
     remove(id: string): Promise<{
         id: string;
@@ -58,5 +76,11 @@ export declare class ClientsController {
         score: number;
         status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
+        age: number | null;
+        country: string | null;
+        birthDate: Date | null;
+        language: string | null;
+        intimateAssessmentPhotos: string[];
+        anamnesisResponses: import("@prisma/client/runtime/library").JsonValue | null;
     }>;
 }

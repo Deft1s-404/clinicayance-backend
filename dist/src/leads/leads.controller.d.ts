@@ -21,6 +21,12 @@ export declare class LeadsController {
             score: number;
             status: import(".prisma/client").$Enums.ClientStatus;
             notes: string | null;
+            age: number | null;
+            country: string | null;
+            birthDate: Date | null;
+            language: string | null;
+            intimateAssessmentPhotos: string[];
+            anamnesisResponses: import("@prisma/client/runtime/library").JsonValue | null;
         };
     } & {
         id: string;

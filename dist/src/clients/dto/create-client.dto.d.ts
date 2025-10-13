@@ -7,4 +7,10 @@ export declare class CreateClientDto {
     tags?: string[];
     status?: ClientStatus;
     notes?: string;
+    age?: number;
+    country?: string;
+    birthDate?: string;
+    language?: string;
+    intimateAssessmentPhotos?: string[];
+    anamnesisResponses?: Record<string, unknown>;
 }

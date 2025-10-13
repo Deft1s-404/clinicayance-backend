@@ -35,7 +35,7 @@ let ClientsService = class ClientsService {
         return this.clientsRepository.findByPhone(phone);
     }
     async create(dto) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e, _f, _g, _h;
         const score = (0, lead_scoring_util_1.calculateLeadScore)({
             source: dto.source,
             tags: (_a = dto.tags) !== null && _a !== void 0 ? _a : [],
@@ -49,7 +49,13 @@ let ClientsService = class ClientsService {
             tags: (_c = dto.tags) !== null && _c !== void 0 ? _c : [],
             notes: dto.notes,
             status: (_d = dto.status) !== null && _d !== void 0 ? _d : client_1.ClientStatus.NEW,
-            score
+            score,
+            age: (_e = dto.age) !== null && _e !== void 0 ? _e : undefined,
+            country: (_f = dto.country) !== null && _f !== void 0 ? _f : undefined,
+            birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
+            language: (_g = dto.language) !== null && _g !== void 0 ? _g : undefined,
+            intimateAssessmentPhotos: (_h = dto.intimateAssessmentPhotos) !== null && _h !== void 0 ? _h : [],
+            anamnesisResponses: dto.anamnesisResponses
         });
     }
     async update(id, dto) {
@@ -60,11 +66,35 @@ let ClientsService = class ClientsService {
             tags: (_c = dto.tags) !== null && _c !== void 0 ? _c : client.tags,
             status: (_d = dto.status) !== null && _d !== void 0 ? _d : client.status
         });
-        return this.clientsRepository.update(id, {
-            ...dto,
+        const updateData = {
             tags: (_e = dto.tags) !== null && _e !== void 0 ? _e : client.tags,
             score
-        });
+        };
+        if (dto.name !== undefined)
+            updateData.name = dto.name;
+        if (dto.email !== undefined)
+            updateData.email = dto.email;
+        if (dto.phone !== undefined)
+            updateData.phone = dto.phone;
+        if (dto.source !== undefined)
+            updateData.source = dto.source;
+        if (dto.notes !== undefined)
+            updateData.notes = dto.notes;
+        if (dto.status !== undefined)
+            updateData.status = dto.status;
+        if (dto.age !== undefined)
+            updateData.age = dto.age;
+        if (dto.country !== undefined)
+            updateData.country = dto.country;
+        if (dto.birthDate !== undefined)
+            updateData.birthDate = dto.birthDate ? new Date(dto.birthDate) : null;
+        if (dto.language !== undefined)
+            updateData.language = dto.language;
+        if (dto.intimateAssessmentPhotos !== undefined)
+            updateData.intimateAssessmentPhotos = dto.intimateAssessmentPhotos;
+        if (dto.anamnesisResponses !== undefined)
+            updateData.anamnesisResponses = dto.anamnesisResponses;
+        return this.clientsRepository.update(id, updateData);
     }
     async delete(id) {
         await this.findById(id);

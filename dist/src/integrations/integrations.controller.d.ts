@@ -16,6 +16,12 @@ export declare class IntegrationsController {
             score: number;
             status: import(".prisma/client").$Enums.ClientStatus;
             notes: string | null;
+            age: number | null;
+            country: string | null;
+            birthDate: Date | null;
+            language: string | null;
+            intimateAssessmentPhotos: string[];
+            anamnesisResponses: import("@prisma/client/runtime/library").JsonValue | null;
         };
         lead: {
             id: string;
@@ -26,6 +32,20 @@ export declare class IntegrationsController {
             notes: string | null;
             stage: import(".prisma/client").$Enums.LeadStage;
             clientId: string;
+        };
+        anamnesisRecord: {
+            id: string;
+            email: string | null;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            phone: string | null;
+            age: number | null;
+            country: string | null;
+            birthDate: Date | null;
+            language: string | null;
+            previousAestheticTreatment: boolean | null;
+            originalResponses: import("@prisma/client/runtime/library").JsonValue | null;
         };
     }>;
 }

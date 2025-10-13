@@ -1,5 +1,5 @@
-﻿import { Injectable, NotFoundException } from '@nestjs/common';
-import { Client, ClientStatus } from '@prisma/client';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Client, ClientStatus, Prisma } from '@prisma/client';
 
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { calculateLeadScore } from '../common/utils/lead-scoring.util';
@@ -48,7 +48,13 @@ export class ClientsService {
       tags: dto.tags ?? [],
       notes: dto.notes,
       status: dto.status ?? ClientStatus.NEW,
-      score
+      score,
+      age: dto.age ?? undefined,
+      country: dto.country ?? undefined,
+      birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
+      language: dto.language ?? undefined,
+      intimateAssessmentPhotos: dto.intimateAssessmentPhotos ?? [],
+      anamnesisResponses: dto.anamnesisResponses as Prisma.InputJsonValue | undefined
     });
   }
 
@@ -61,11 +67,28 @@ export class ClientsService {
       status: dto.status ?? client.status
     });
 
-    return this.clientsRepository.update(id, {
-      ...dto,
+    const updateData: Prisma.ClientUpdateInput = {
       tags: dto.tags ?? client.tags,
       score
-    });
+    };
+
+    if (dto.name !== undefined) updateData.name = dto.name;
+    if (dto.email !== undefined) updateData.email = dto.email;
+    if (dto.phone !== undefined) updateData.phone = dto.phone;
+    if (dto.source !== undefined) updateData.source = dto.source;
+    if (dto.notes !== undefined) updateData.notes = dto.notes;
+    if (dto.status !== undefined) updateData.status = dto.status;
+    if (dto.age !== undefined) updateData.age = dto.age;
+    if (dto.country !== undefined) updateData.country = dto.country;
+    if (dto.birthDate !== undefined)
+      updateData.birthDate = dto.birthDate ? new Date(dto.birthDate) : null;
+    if (dto.language !== undefined) updateData.language = dto.language;
+    if (dto.intimateAssessmentPhotos !== undefined)
+      updateData.intimateAssessmentPhotos = dto.intimateAssessmentPhotos;
+    if (dto.anamnesisResponses !== undefined)
+      updateData.anamnesisResponses = dto.anamnesisResponses as Prisma.InputJsonValue;
+
+    return this.clientsRepository.update(id, updateData);
   }
 
   async delete(id: string): Promise<Client> {

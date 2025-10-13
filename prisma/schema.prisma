@@ -56,6 +56,7 @@ model User {
   updatedAt DateTime @updatedAt
   googleAccount   GoogleAccount?
   googleOAuthStates GoogleOAuthState[]
+  evolutionInstances EvolutionInstance[]
 }
 
 model Client {
@@ -68,12 +69,48 @@ model Client {
   score        Int            @default(0)
   status       ClientStatus   @default(NEW)
   notes        String?
+  age          Int?
+  country      String?
+  birthDate    DateTime?
+  language     String?
+  intimateAssessmentPhotos String[] @default([])
+  anamnesisResponses      Json?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   leads        Lead[]
   appointments Appointment[]
   payments     Payment[]
   funnelEvents FunnelEvent[]
+}
+
+model EvolutionInstance {
+  id          String   @id @default(cuid())
+  userId      String
+  instanceId  String   @unique
+  providerInstanceId String? @unique
+  status      String   @default("pending")
+  connectedAt DateTime?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+model AnamnesisRecord {
+  id                            String   @id @default(cuid())
+  name                          String
+  age                           Int?
+  country                       String?
+  birthDate                     DateTime?
+  language                      String?
+  phone                         String?
+  email                         String?
+  previousAestheticTreatment    Boolean?
+  originalResponses             Json?
+  createdAt                     DateTime @default(now())
+  updatedAt                     DateTime @updatedAt
 }
 
 model Lead {

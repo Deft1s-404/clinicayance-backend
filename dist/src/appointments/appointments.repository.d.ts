@@ -47,6 +47,12 @@ export declare class AppointmentsRepository {
             score: number;
             status: import(".prisma/client").$Enums.ClientStatus;
             notes: string | null;
+            age: number | null;
+            country: string | null;
+            birthDate: Date | null;
+            language: string | null;
+            intimateAssessmentPhotos: string[];
+            anamnesisResponses: Prisma.JsonValue | null;
         };
     } & {
         id: string;

@@ -8,11 +8,9 @@ export declare class ClientsController {
     constructor(clientsService: ClientsService);
     list(query: PaginationQueryDto): Promise<PaginatedClients>;
     find(id: string): Promise<{
+        name: string;
         id: string;
         email: string | null;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
         phone: string | null;
         source: string | null;
         tags: string[];
@@ -25,13 +23,13 @@ export declare class ClientsController {
         language: string | null;
         intimateAssessmentPhotos: string[];
         anamnesisResponses: import("@prisma/client/runtime/library").JsonValue | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     create(dto: CreateClientDto): Promise<{
+        name: string;
         id: string;
         email: string | null;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
         phone: string | null;
         source: string | null;
         tags: string[];
@@ -44,13 +42,13 @@ export declare class ClientsController {
         language: string | null;
         intimateAssessmentPhotos: string[];
         anamnesisResponses: import("@prisma/client/runtime/library").JsonValue | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     update(id: string, dto: UpdateClientDto): Promise<{
+        name: string;
         id: string;
         email: string | null;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
         phone: string | null;
         source: string | null;
         tags: string[];
@@ -63,13 +61,13 @@ export declare class ClientsController {
         language: string | null;
         intimateAssessmentPhotos: string[];
         anamnesisResponses: import("@prisma/client/runtime/library").JsonValue | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     remove(id: string): Promise<{
+        name: string;
         id: string;
         email: string | null;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
         phone: string | null;
         source: string | null;
         tags: string[];
@@ -82,5 +80,7 @@ export declare class ClientsController {
         language: string | null;
         intimateAssessmentPhotos: string[];
         anamnesisResponses: import("@prisma/client/runtime/library").JsonValue | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
 }

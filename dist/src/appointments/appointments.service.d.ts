@@ -11,24 +11,10 @@ export declare class AppointmentsService {
     constructor(appointmentsRepository: AppointmentsRepository, clientsService: ClientsService, funnelEventsService: FunnelEventsService);
     list(query: AppointmentQuery): Promise<PaginatedAppointments>;
     findById(id: string): Promise<{
-        payments: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            status: import(".prisma/client").$Enums.PaymentStatus;
-            clientId: string;
-            value: import("@prisma/client/runtime/library").Decimal;
-            method: string;
-            pixTxid: string | null;
-            comprovanteUrl: string | null;
-            appointmentId: string;
-        }[];
         client: {
+            name: string;
             id: string;
             email: string | null;
-            name: string;
-            createdAt: Date;
-            updatedAt: Date;
             phone: string | null;
             source: string | null;
             tags: string[];
@@ -41,12 +27,26 @@ export declare class AppointmentsService {
             language: string | null;
             intimateAssessmentPhotos: string[];
             anamnesisResponses: import("@prisma/client/runtime/library").JsonValue | null;
+            createdAt: Date;
+            updatedAt: Date;
         };
+        payments: {
+            id: string;
+            status: import(".prisma/client").$Enums.PaymentStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            clientId: string;
+            appointmentId: string;
+            value: import("@prisma/client/runtime/library").Decimal;
+            method: string;
+            pixTxid: string | null;
+            comprovanteUrl: string | null;
+        }[];
     } & {
         id: string;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         clientId: string;
         procedure: string;
         start: Date;

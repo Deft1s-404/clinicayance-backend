@@ -52,7 +52,7 @@ export class ClientsRepository {
   }
 
   findByEmail(email: string): Promise<Client | null> {
-    return this.prisma.client.findUnique({ where: { email } });
+    return this.prisma.client.findFirst({ where: { email } });
   }
 
   findByPhone(phone: string): Promise<Client | null> {

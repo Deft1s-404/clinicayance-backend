@@ -5,11 +5,9 @@ export declare class IntegrationsController {
     constructor(integrationsService: IntegrationsService);
     syncGoogleForms(dto: GoogleFormsPayloadDto): Promise<{
         client: {
+            name: string;
             id: string;
             email: string | null;
-            name: string;
-            createdAt: Date;
-            updatedAt: Date;
             phone: string | null;
             source: string | null;
             tags: string[];
@@ -22,28 +20,30 @@ export declare class IntegrationsController {
             language: string | null;
             intimateAssessmentPhotos: string[];
             anamnesisResponses: import("@prisma/client/runtime/library").JsonValue | null;
+            createdAt: Date;
+            updatedAt: Date;
         };
         lead: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             source: string | null;
             score: number;
             notes: string | null;
-            stage: import(".prisma/client").$Enums.LeadStage;
-            clientId: string;
-        };
-        anamnesisRecord: {
-            id: string;
-            email: string | null;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            clientId: string;
+            stage: import(".prisma/client").$Enums.LeadStage;
+        };
+        anamnesisRecord: {
+            name: string;
+            id: string;
+            email: string | null;
             phone: string | null;
             age: number | null;
             country: string | null;
             birthDate: Date | null;
             language: string | null;
+            createdAt: Date;
+            updatedAt: Date;
             previousAestheticTreatment: boolean | null;
             originalResponses: import("@prisma/client/runtime/library").JsonValue | null;
         };

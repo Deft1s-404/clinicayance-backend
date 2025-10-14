@@ -10,11 +10,9 @@ export declare class LeadsController {
     list(query: PaginationQueryDto, stage?: LeadStage): Promise<PaginatedLeads>;
     find(id: string): Promise<{
         client: {
+            name: string;
             id: string;
             email: string | null;
-            name: string;
-            createdAt: Date;
-            updatedAt: Date;
             phone: string | null;
             source: string | null;
             tags: string[];
@@ -27,45 +25,47 @@ export declare class LeadsController {
             language: string | null;
             intimateAssessmentPhotos: string[];
             anamnesisResponses: import("@prisma/client/runtime/library").JsonValue | null;
+            createdAt: Date;
+            updatedAt: Date;
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         source: string | null;
         score: number;
         notes: string | null;
-        stage: import(".prisma/client").$Enums.LeadStage;
+        createdAt: Date;
+        updatedAt: Date;
         clientId: string;
+        stage: import(".prisma/client").$Enums.LeadStage;
     }>;
     create(dto: CreateLeadDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         source: string | null;
         score: number;
         notes: string | null;
-        stage: import(".prisma/client").$Enums.LeadStage;
+        createdAt: Date;
+        updatedAt: Date;
         clientId: string;
+        stage: import(".prisma/client").$Enums.LeadStage;
     }>;
     update(id: string, dto: UpdateLeadDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         source: string | null;
         score: number;
         notes: string | null;
-        stage: import(".prisma/client").$Enums.LeadStage;
+        createdAt: Date;
+        updatedAt: Date;
         clientId: string;
+        stage: import(".prisma/client").$Enums.LeadStage;
     }>;
     remove(id: string): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         source: string | null;
         score: number;
         notes: string | null;
-        stage: import(".prisma/client").$Enums.LeadStage;
+        createdAt: Date;
+        updatedAt: Date;
         clientId: string;
+        stage: import(".prisma/client").$Enums.LeadStage;
     }>;
 }

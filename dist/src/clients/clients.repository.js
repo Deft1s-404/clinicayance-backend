@@ -49,7 +49,7 @@ let ClientsRepository = class ClientsRepository {
         });
     }
     findByEmail(email) {
-        return this.prisma.client.findUnique({ where: { email } });
+        return this.prisma.client.findFirst({ where: { email } });
     }
     findByPhone(phone) {
         return this.prisma.client.findFirst({ where: { phone } });

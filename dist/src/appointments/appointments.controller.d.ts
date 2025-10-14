@@ -9,24 +9,10 @@ export declare class AppointmentsController {
     constructor(appointmentsService: AppointmentsService);
     list(query: PaginationQueryDto, status?: AppointmentStatus, start?: string, end?: string): Promise<PaginatedAppointments>;
     find(id: string): Promise<{
-        payments: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            status: import(".prisma/client").$Enums.PaymentStatus;
-            clientId: string;
-            value: import("@prisma/client/runtime/library").Decimal;
-            method: string;
-            pixTxid: string | null;
-            comprovanteUrl: string | null;
-            appointmentId: string;
-        }[];
         client: {
+            name: string;
             id: string;
             email: string | null;
-            name: string;
-            createdAt: Date;
-            updatedAt: Date;
             phone: string | null;
             source: string | null;
             tags: string[];
@@ -39,12 +25,26 @@ export declare class AppointmentsController {
             language: string | null;
             intimateAssessmentPhotos: string[];
             anamnesisResponses: import("@prisma/client/runtime/library").JsonValue | null;
+            createdAt: Date;
+            updatedAt: Date;
         };
+        payments: {
+            id: string;
+            status: import(".prisma/client").$Enums.PaymentStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            clientId: string;
+            appointmentId: string;
+            value: import("@prisma/client/runtime/library").Decimal;
+            method: string;
+            pixTxid: string | null;
+            comprovanteUrl: string | null;
+        }[];
     } & {
         id: string;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         clientId: string;
         procedure: string;
         start: Date;
@@ -52,9 +52,9 @@ export declare class AppointmentsController {
     }>;
     create(dto: CreateAppointmentDto): Promise<{
         id: string;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         clientId: string;
         procedure: string;
         start: Date;
@@ -62,9 +62,9 @@ export declare class AppointmentsController {
     }>;
     update(id: string, dto: UpdateAppointmentDto): Promise<{
         id: string;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         clientId: string;
         procedure: string;
         start: Date;
@@ -72,9 +72,9 @@ export declare class AppointmentsController {
     }>;
     remove(id: string): Promise<{
         id: string;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         clientId: string;
         procedure: string;
         start: Date;

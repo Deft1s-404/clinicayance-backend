@@ -9,11 +9,9 @@ export declare class ClientsService {
     list(query: PaginationQueryDto): Promise<PaginatedClients>;
     findById(id: string): Promise<Client>;
     findByEmail(email: string): Promise<{
+        name: string;
         id: string;
         email: string | null;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
         phone: string | null;
         source: string | null;
         tags: string[];
@@ -26,13 +24,13 @@ export declare class ClientsService {
         language: string | null;
         intimateAssessmentPhotos: string[];
         anamnesisResponses: Prisma.JsonValue | null;
+        createdAt: Date;
+        updatedAt: Date;
     } | null>;
     findByPhone(phone: string): Promise<{
+        name: string;
         id: string;
         email: string | null;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
         phone: string | null;
         source: string | null;
         tags: string[];
@@ -45,6 +43,8 @@ export declare class ClientsService {
         language: string | null;
         intimateAssessmentPhotos: string[];
         anamnesisResponses: Prisma.JsonValue | null;
+        createdAt: Date;
+        updatedAt: Date;
     } | null>;
     create(dto: CreateClientDto): Promise<Client>;
     update(id: string, dto: UpdateClientDto): Promise<Client>;

@@ -11,11 +11,9 @@ export declare class PaymentsController {
     list(query: PaginationQueryDto, status?: PaymentStatus): Promise<PaginatedPayments>;
     find(id: string): Promise<{
         client: {
+            name: string;
             id: string;
             email: string | null;
-            name: string;
-            createdAt: Date;
-            updatedAt: Date;
             phone: string | null;
             source: string | null;
             tags: string[];
@@ -28,14 +26,14 @@ export declare class PaymentsController {
             language: string | null;
             intimateAssessmentPhotos: string[];
             anamnesisResponses: import("@prisma/client/runtime/library").JsonValue | null;
+            createdAt: Date;
+            updatedAt: Date;
         };
         appointment: {
             client: {
+                name: string;
                 id: string;
                 email: string | null;
-                name: string;
-                createdAt: Date;
-                updatedAt: Date;
                 phone: string | null;
                 source: string | null;
                 tags: string[];
@@ -48,12 +46,14 @@ export declare class PaymentsController {
                 language: string | null;
                 intimateAssessmentPhotos: string[];
                 anamnesisResponses: import("@prisma/client/runtime/library").JsonValue | null;
+                createdAt: Date;
+                updatedAt: Date;
             };
         } & {
             id: string;
+            status: import(".prisma/client").$Enums.AppointmentStatus;
             createdAt: Date;
             updatedAt: Date;
-            status: import(".prisma/client").$Enums.AppointmentStatus;
             clientId: string;
             procedure: string;
             start: Date;
@@ -61,62 +61,62 @@ export declare class PaymentsController {
         };
     } & {
         id: string;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.PaymentStatus;
         clientId: string;
+        appointmentId: string;
         value: import("@prisma/client/runtime/library").Decimal;
         method: string;
         pixTxid: string | null;
         comprovanteUrl: string | null;
-        appointmentId: string;
     }>;
     create(dto: CreatePaymentDto): Promise<{
         id: string;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.PaymentStatus;
         clientId: string;
+        appointmentId: string;
         value: import("@prisma/client/runtime/library").Decimal;
         method: string;
         pixTxid: string | null;
         comprovanteUrl: string | null;
-        appointmentId: string;
     }>;
     update(id: string, dto: UpdatePaymentDto): Promise<{
         id: string;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.PaymentStatus;
         clientId: string;
+        appointmentId: string;
         value: import("@prisma/client/runtime/library").Decimal;
         method: string;
         pixTxid: string | null;
         comprovanteUrl: string | null;
-        appointmentId: string;
     }>;
     remove(id: string): Promise<{
         id: string;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.PaymentStatus;
         clientId: string;
+        appointmentId: string;
         value: import("@prisma/client/runtime/library").Decimal;
         method: string;
         pixTxid: string | null;
         comprovanteUrl: string | null;
-        appointmentId: string;
     }>;
     webhook(dto: PaymentWebhookDto): Promise<{
         id: string;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.PaymentStatus;
         clientId: string;
+        appointmentId: string;
         value: import("@prisma/client/runtime/library").Decimal;
         method: string;
         pixTxid: string | null;
         comprovanteUrl: string | null;
-        appointmentId: string;
     }>;
 }

@@ -16,22 +16,28 @@ exports.ReportsService = void 0;
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
 const dayjs_1 = __importDefault(require("dayjs"));
-const funnel_events_service_1 = require("../funnel-events/funnel-events.service");
 const prisma_service_1 = require("../prisma/prisma.service");
 let ReportsService = class ReportsService {
-    constructor(prisma, funnelEventsService) {
+    constructor(prisma) {
         this.prisma = prisma;
-        this.funnelEventsService = funnelEventsService;
     }
     async funnel() {
-        const counts = await this.funnelEventsService.countByType([
-            'lead_created',
-            'lead_qualified',
-            'appointment_booked',
-            'appointment_completed',
-            'payment_confirmed'
+        const qualifiedStages = [client_1.LeadStage.QUALIFIED, client_1.LeadStage.PROPOSAL, client_1.LeadStage.WON];
+        const [leadCount, qualifiedLeadCount, bookedAppointments, completedAppointments, confirmedPayments] = await Promise.all([
+            this.prisma.lead.count(),
+            this.prisma.lead.count({ where: { stage: { in: qualifiedStages } } }),
+            this.prisma.appointment.count(),
+            this.prisma.appointment.count({ where: { status: client_1.AppointmentStatus.COMPLETED } }),
+            this.prisma.payment.count({ where: { status: client_1.PaymentStatus.CONFIRMED } })
         ]);
-        const conversionRate = counts.lead_created && counts.payment_confirmed
+        const counts = {
+            lead_created: leadCount,
+            lead_qualified: qualifiedLeadCount,
+            appointment_booked: bookedAppointments,
+            appointment_completed: completedAppointments,
+            payment_confirmed: confirmedPayments
+        };
+        const conversionRate = counts.lead_created
             ? Number(((counts.payment_confirmed / counts.lead_created) * 100).toFixed(2))
             : 0;
         return {
@@ -95,7 +101,6 @@ let ReportsService = class ReportsService {
 exports.ReportsService = ReportsService;
 exports.ReportsService = ReportsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        funnel_events_service_1.FunnelEventsService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], ReportsService);
 //# sourceMappingURL=reports.service.js.map

@@ -1,4 +1,3 @@
-import { FunnelEventsService } from '../funnel-events/funnel-events.service';
 import { PrismaService } from '../prisma/prisma.service';
 interface DateRange {
     start?: string;
@@ -6,10 +5,15 @@ interface DateRange {
 }
 export declare class ReportsService {
     private readonly prisma;
-    private readonly funnelEventsService;
-    constructor(prisma: PrismaService, funnelEventsService: FunnelEventsService);
+    constructor(prisma: PrismaService);
     funnel(): Promise<{
-        counts: Record<string, number>;
+        counts: {
+            lead_created: number;
+            lead_qualified: number;
+            appointment_booked: number;
+            appointment_completed: number;
+            payment_confirmed: number;
+        };
         conversionRate: number;
     }>;
     revenue(period: 'day' | 'month', range: DateRange): Promise<{

@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { AppointmentStatus, PaymentStatus } from '@prisma/client';
+import { AppointmentStatus, LeadStage, PaymentStatus } from '@prisma/client';
 import dayjs from 'dayjs';
 
-import { FunnelEventsService } from '../funnel-events/funnel-events.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 interface DateRange {
@@ -13,21 +12,31 @@ interface DateRange {
 @Injectable()
 export class ReportsService {
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly funnelEventsService: FunnelEventsService
+    private readonly prisma: PrismaService
   ) {}
 
   async funnel() {
-    const counts = await this.funnelEventsService.countByType([
-      'lead_created',
-      'lead_qualified',
-      'appointment_booked',
-      'appointment_completed',
-      'payment_confirmed'
-    ]);
+    const qualifiedStages = [LeadStage.QUALIFIED, LeadStage.PROPOSAL, LeadStage.WON];
+
+    const [leadCount, qualifiedLeadCount, bookedAppointments, completedAppointments, confirmedPayments] =
+      await Promise.all([
+        this.prisma.lead.count(),
+        this.prisma.lead.count({ where: { stage: { in: qualifiedStages } } }),
+        this.prisma.appointment.count(),
+        this.prisma.appointment.count({ where: { status: AppointmentStatus.COMPLETED } }),
+        this.prisma.payment.count({ where: { status: PaymentStatus.CONFIRMED } })
+      ]);
+
+    const counts = {
+      lead_created: leadCount,
+      lead_qualified: qualifiedLeadCount,
+      appointment_booked: bookedAppointments,
+      appointment_completed: completedAppointments,
+      payment_confirmed: confirmedPayments
+    };
 
     const conversionRate =
-      counts.lead_created && counts.payment_confirmed
+      counts.lead_created
         ? Number(((counts.payment_confirmed / counts.lead_created) * 100).toFixed(2))
         : 0;
 

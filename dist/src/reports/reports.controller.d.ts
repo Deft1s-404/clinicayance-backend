@@ -3,7 +3,13 @@ export declare class ReportsController {
     private readonly reportsService;
     constructor(reportsService: ReportsService);
     funnel(): Promise<{
-        counts: Record<string, number>;
+        counts: {
+            lead_created: number;
+            lead_qualified: number;
+            appointment_booked: number;
+            appointment_completed: number;
+            payment_confirmed: number;
+        };
         conversionRate: number;
     }>;
     revenue(period?: 'day' | 'month', start?: string, end?: string): Promise<{

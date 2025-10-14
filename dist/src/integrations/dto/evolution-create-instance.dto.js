@@ -19,7 +19,13 @@ __decorate([
     __metadata("design:type", String)
 ], EvolutionCreateInstanceDto.prototype, "instanceName", void 0);
 __decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsUrl)(),
     __metadata("design:type", String)
 ], EvolutionCreateInstanceDto.prototype, "webhookUrl", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], EvolutionCreateInstanceDto.prototype, "slotId", void 0);
 //# sourceMappingURL=evolution-create-instance.dto.js.map

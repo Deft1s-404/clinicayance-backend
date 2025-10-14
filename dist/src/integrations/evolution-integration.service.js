@@ -14,27 +14,40 @@ exports.EvolutionIntegrationService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const evolution_service_1 = require("./evolution.service");
+const PRECONFIGURED_EVOLUTION_SLOTS = {
+    slot1: { webhookUrl: 'https://example.com/webhook/slot1' },
+    slot2: { webhookUrl: 'https://example.com/webhook/slot2' },
+    slot3: { webhookUrl: 'https://example.com/webhook/slot3' },
+    slot4: { webhookUrl: 'https://example.com/webhook/slot4' }
+};
 let EvolutionIntegrationService = EvolutionIntegrationService_1 = class EvolutionIntegrationService {
     constructor(prisma, evolutionService) {
         this.prisma = prisma;
         this.evolutionService = evolutionService;
         this.logger = new common_1.Logger(EvolutionIntegrationService_1.name);
     }
-    async createManagedInstance(userId, instanceName, webhookUrl) {
+    async createManagedInstance(userId, instanceName, webhookUrl, slotId) {
         var _a, _b, _c, _d, _e;
-        const existing = await this.evolutionModel().findFirst({
-            where: {
-                userId,
-                metadata: {
-                    path: ['displayName'],
-                    equals: instanceName
+        const { resolvedWebhookUrl, resolvedSlotId } = this.resolveSlotConfiguration(slotId, webhookUrl);
+        if (resolvedSlotId) {
+            const slotInUse = await this.evolutionModel().findFirst({
+                where: {
+                    userId,
+                    metadata: {
+                        path: ['slotId'],
+                        equals: resolvedSlotId
+                    }
                 }
+            });
+            if (slotInUse) {
+                throw new common_1.BadRequestException('Slot Evolution selecionado ja possui uma instancia criada.');
             }
-        });
+        }
+        const existing = await this.findInstanceByDisplayName(userId, instanceName);
         if (existing) {
             throw new common_1.BadRequestException('Instancia Evolution com esse nome ja existe.');
         }
-        const payload = this.buildManagedInstancePayload(webhookUrl);
+        const payload = this.buildManagedInstancePayload(resolvedWebhookUrl);
         const created = await this.evolutionService.createInstance(instanceName, payload);
         const summary = await this.evolutionService
             .fetchInstance(created.id, (_a = created.providerId) !== null && _a !== void 0 ? _a : null)
@@ -43,10 +56,12 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
         const number = this.extractPhoneFromSummary(summary);
         const providerStatus = (_d = summary === null || summary === void 0 ? void 0 : summary.connectionStatus) !== null && _d !== void 0 ? _d : 'created';
         const metadata = {
+            displayName: instanceName,
+            slotId: resolvedSlotId !== null && resolvedSlotId !== void 0 ? resolvedSlotId : null,
             lastState: providerStatus,
             lastStatusAt: new Date().toISOString(),
             providerId: providerInstanceId,
-            webhookUrl,
+            webhookUrl: resolvedWebhookUrl,
             number: number !== null && number !== void 0 ? number : null
         };
         await this.evolutionModel().create({
@@ -64,8 +79,30 @@ let EvolutionIntegrationService = EvolutionIntegrationService_1 = class Evolutio
             number,
             name: (_e = summary === null || summary === void 0 ? void 0 : summary.profileName) !== null && _e !== void 0 ? _e : instanceName,
             providerStatus,
-            pairingCode: null
+            pairingCode: null,
+            slotId: resolvedSlotId !== null && resolvedSlotId !== void 0 ? resolvedSlotId : null
         };
+    }
+    resolveSlotConfiguration(slotId, webhookUrl) {
+        var _a, _b;
+        const normalizedSlotId = slotId === null || slotId === void 0 ? void 0 : slotId.trim();
+        const normalizedWebhookUrl = webhookUrl === null || webhookUrl === void 0 ? void 0 : webhookUrl.trim();
+        if (normalizedSlotId && normalizedSlotId.length > 0) {
+            const slotConfig = PRECONFIGURED_EVOLUTION_SLOTS[normalizedSlotId];
+            if (!slotConfig) {
+                throw new common_1.BadRequestException('Slot Evolution selecionado e invalido.');
+            }
+            const slotWebhook = (_b = (_a = slotConfig.webhookUrl) === null || _a === void 0 ? void 0 : _a.trim()) !== null && _b !== void 0 ? _b : null;
+            const resolvedWebhookUrl = normalizedWebhookUrl && normalizedWebhookUrl.length > 0 ? normalizedWebhookUrl : slotWebhook;
+            if (!resolvedWebhookUrl) {
+                throw new common_1.BadRequestException('Slot Evolution selecionado nao possui webhook configurado.');
+            }
+            return { resolvedWebhookUrl, resolvedSlotId: normalizedSlotId };
+        }
+        if (normalizedWebhookUrl && normalizedWebhookUrl.length > 0) {
+            return { resolvedWebhookUrl: normalizedWebhookUrl, resolvedSlotId: null };
+        }
+        throw new common_1.BadRequestException('Informe um webhook valido ou selecione um slot Evolution pre-configurado.');
     }
     async listManagedInstances(userId) {
         const records = await this.evolutionModel().findMany({

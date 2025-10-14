@@ -17,13 +17,15 @@ export interface EvolutionSessionResponse {
     providerStatus?: string;
     message?: string | null;
     pairingCode?: string | null;
+    slotId?: string | null;
 }
 export declare class EvolutionIntegrationService {
     private readonly prisma;
     private readonly evolutionService;
     private readonly logger;
     constructor(prisma: PrismaService, evolutionService: EvolutionService);
-    createManagedInstance(userId: string, instanceName: string, webhookUrl: string): Promise<EvolutionSessionResponse>;
+    createManagedInstance(userId: string, instanceName: string, webhookUrl?: string, slotId?: string): Promise<EvolutionSessionResponse>;
+    private resolveSlotConfiguration;
     listManagedInstances(userId: string): Promise<EvolutionSessionResponse[]>;
     startSession(userId: string, phoneNumber?: string): Promise<EvolutionSessionResponse>;
     refreshQr(userId: string, instanceId: string, phoneNumber?: string): Promise<EvolutionSessionResponse>;

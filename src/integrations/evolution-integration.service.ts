@@ -9,6 +9,22 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { EvolutionInstanceSummary, EvolutionService } from './evolution.service';
 
+/**
+ * Slots pre-configurados para provisionar instancias Evolution.
+ * Substitua os valores de webhook conforme necessario no deploy real.
+ */
+const PRECONFIGURED_EVOLUTION_SLOTS: Record<
+  string,
+  {
+    webhookUrl: string;
+  }
+> = {
+  slot1: { webhookUrl: 'https://example.com/webhook/slot1' },
+  slot2: { webhookUrl: 'https://example.com/webhook/slot2' },
+  slot3: { webhookUrl: 'https://example.com/webhook/slot3' },
+  slot4: { webhookUrl: 'https://example.com/webhook/slot4' }
+};
+
 interface EvolutionQrPayload {
   svg: string | null;
   base64: string | null;
@@ -27,6 +43,7 @@ export interface EvolutionSessionResponse {
   providerStatus?: string;
   message?: string | null;
   pairingCode?: string | null;
+  slotId?: string | null;
 }
 
 type JsonValue = string | number | boolean | null | JsonObject | JsonValue[];
@@ -56,23 +73,33 @@ export class EvolutionIntegrationService {
   async createManagedInstance(
     userId: string,
     instanceName: string,
-    webhookUrl: string
+    webhookUrl?: string,
+    slotId?: string
   ): Promise<EvolutionSessionResponse> {
-    const existing = await this.evolutionModel().findFirst({
-      where: {
-        userId,
-        metadata: {
-          path: ['displayName'],
-          equals: instanceName
-        }
-      }
-    });
+    const { resolvedWebhookUrl, resolvedSlotId } = this.resolveSlotConfiguration(slotId, webhookUrl);
 
+    if (resolvedSlotId) {
+      const slotInUse = await this.evolutionModel().findFirst({
+        where: {
+          userId,
+          metadata: {
+            path: ['slotId'],
+            equals: resolvedSlotId
+          }
+        }
+      });
+
+      if (slotInUse) {
+        throw new BadRequestException('Slot Evolution selecionado ja possui uma instancia criada.');
+      }
+    }
+
+    const existing = await this.findInstanceByDisplayName(userId, instanceName);
     if (existing) {
       throw new BadRequestException('Instancia Evolution com esse nome ja existe.');
     }
 
-    const payload = this.buildManagedInstancePayload(webhookUrl);
+    const payload = this.buildManagedInstancePayload(resolvedWebhookUrl);
     const created = await this.evolutionService.createInstance(instanceName, payload);
 
     const summary = await this.evolutionService
@@ -84,10 +111,12 @@ export class EvolutionIntegrationService {
     const providerStatus = summary?.connectionStatus ?? 'created';
 
     const metadata: JsonObject = {
+      displayName: instanceName,
+      slotId: resolvedSlotId ?? null,
       lastState: providerStatus,
       lastStatusAt: new Date().toISOString(),
       providerId: providerInstanceId,
-      webhookUrl,
+      webhookUrl: resolvedWebhookUrl,
       number: number ?? null
     };
 
@@ -107,8 +136,42 @@ export class EvolutionIntegrationService {
       number,
       name: summary?.profileName ?? instanceName,
       providerStatus,
-      pairingCode: null
+      pairingCode: null,
+      slotId: resolvedSlotId ?? null
     };
+  }
+
+  private resolveSlotConfiguration(
+    slotId?: string,
+    webhookUrl?: string
+  ): { resolvedWebhookUrl: string; resolvedSlotId: string | null } {
+    const normalizedSlotId = slotId?.trim();
+    const normalizedWebhookUrl = webhookUrl?.trim();
+
+    if (normalizedSlotId && normalizedSlotId.length > 0) {
+      const slotConfig = PRECONFIGURED_EVOLUTION_SLOTS[normalizedSlotId];
+
+      if (!slotConfig) {
+        throw new BadRequestException('Slot Evolution selecionado e invalido.');
+      }
+
+      const slotWebhook = slotConfig.webhookUrl?.trim() ?? null;
+      const resolvedWebhookUrl = normalizedWebhookUrl && normalizedWebhookUrl.length > 0 ? normalizedWebhookUrl : slotWebhook;
+
+      if (!resolvedWebhookUrl) {
+        throw new BadRequestException('Slot Evolution selecionado nao possui webhook configurado.');
+      }
+
+      return { resolvedWebhookUrl, resolvedSlotId: normalizedSlotId };
+    }
+
+    if (normalizedWebhookUrl && normalizedWebhookUrl.length > 0) {
+      return { resolvedWebhookUrl: normalizedWebhookUrl, resolvedSlotId: null };
+    }
+
+    throw new BadRequestException(
+      'Informe um webhook valido ou selecione um slot Evolution pre-configurado.'
+    );
   }
 
   async listManagedInstances(userId: string): Promise<EvolutionSessionResponse[]> {

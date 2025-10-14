@@ -32,7 +32,7 @@ let EvolutionController = class EvolutionController {
         return this.evolutionIntegrationService.startSession(user.userId, dto.number);
     }
     createInstance(user, dto) {
-        return this.evolutionIntegrationService.createManagedInstance(user.userId, dto.instanceName, dto.webhookUrl);
+        return this.evolutionIntegrationService.createManagedInstance(user.userId, dto.instanceName, dto.webhookUrl, dto.slotId);
     }
     refreshQr(user, instanceId, dto) {
         return this.evolutionIntegrationService.refreshQr(user.userId, instanceId, dto.number);

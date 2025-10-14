@@ -1,9 +1,14 @@
-import { IsString, IsUrl } from 'class-validator';
+import { IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class EvolutionCreateInstanceDto {
   @IsString()
   instanceName!: string;
 
+  @IsOptional()
   @IsUrl()
-  webhookUrl!: string;
+  webhookUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  slotId?: string;
 }

@@ -41,7 +41,8 @@ export class EvolutionController {
     return this.evolutionIntegrationService.createManagedInstance(
       user.userId,
       dto.instanceName,
-      dto.webhookUrl
+      dto.webhookUrl,
+      dto.slotId
     );
   }
 

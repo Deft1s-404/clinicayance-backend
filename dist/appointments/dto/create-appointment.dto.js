@@ -9,22 +9,31 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EvolutionProvisionInstanceDto = void 0;
+exports.CreateAppointmentDto = void 0;
+const client_1 = require("@prisma/client");
 const class_validator_1 = require("class-validator");
-class EvolutionProvisionInstanceDto {
+class CreateAppointmentDto {
 }
-exports.EvolutionProvisionInstanceDto = EvolutionProvisionInstanceDto;
+exports.CreateAppointmentDto = CreateAppointmentDto;
 __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], EvolutionProvisionInstanceDto.prototype, "instanceName", void 0);
+], CreateAppointmentDto.prototype, "clientId", void 0);
 __decorate([
-    (0, class_validator_1.IsUrl)(),
+    (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], EvolutionProvisionInstanceDto.prototype, "webhookUrl", void 0);
+], CreateAppointmentDto.prototype, "procedure", void 0);
+__decorate([
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], CreateAppointmentDto.prototype, "start", void 0);
+__decorate([
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], CreateAppointmentDto.prototype, "end", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsObject)(),
-    __metadata("design:type", Object)
-], EvolutionProvisionInstanceDto.prototype, "overrides", void 0);
-//# sourceMappingURL=evolution-provision-instance.dto.js.map
+    (0, class_validator_1.IsEnum)(client_1.AppointmentStatus),
+    __metadata("design:type", String)
+], CreateAppointmentDto.prototype, "status", void 0);
+//# sourceMappingURL=create-appointment.dto.js.map

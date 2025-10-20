@@ -3,12 +3,9 @@ import { Appointment, AppointmentStatus } from '@prisma/client';
 
 import { ClientsService } from '../clients/clients.service';
 import { FunnelEventsService } from '../funnel-events/funnel-events.service';
-import {
-  AppointmentQuery,
-  AppointmentsRepository,
-  PaginatedAppointments
-} from './appointments.repository';
+import { AppointmentsRepository, PaginatedAppointments } from './appointments.repository';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
+import { ListAppointmentsDto } from './dto/list-appointments.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 
 @Injectable()
@@ -19,7 +16,7 @@ export class AppointmentsService {
     private readonly funnelEventsService: FunnelEventsService
   ) {}
 
-  list(query: AppointmentQuery): Promise<PaginatedAppointments> {
+  list(query: ListAppointmentsDto): Promise<PaginatedAppointments> {
     return this.appointmentsRepository.findMany(query);
   }
 

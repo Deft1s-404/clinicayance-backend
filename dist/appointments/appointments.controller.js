@@ -14,17 +14,16 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppointmentsController = void 0;
 const common_1 = require("@nestjs/common");
-const client_1 = require("@prisma/client");
-const pagination_dto_1 = require("../common/dto/pagination.dto");
 const appointments_service_1 = require("./appointments.service");
 const create_appointment_dto_1 = require("./dto/create-appointment.dto");
 const update_appointment_dto_1 = require("./dto/update-appointment.dto");
+const list_appointments_dto_1 = require("./dto/list-appointments.dto");
 let AppointmentsController = class AppointmentsController {
     constructor(appointmentsService) {
         this.appointmentsService = appointmentsService;
     }
-    list(query, status, start, end) {
-        return this.appointmentsService.list({ ...query, status, start, end });
+    list(query) {
+        return this.appointmentsService.list(query);
     }
     find(id) {
         return this.appointmentsService.findById(id);
@@ -43,11 +42,8 @@ exports.AppointmentsController = AppointmentsController;
 __decorate([
     (0, common_1.Get)(),
     __param(0, (0, common_1.Query)()),
-    __param(1, (0, common_1.Query)('status')),
-    __param(2, (0, common_1.Query)('start')),
-    __param(3, (0, common_1.Query)('end')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [pagination_dto_1.PaginationQueryDto, String, String, String]),
+    __metadata("design:paramtypes", [list_appointments_dto_1.ListAppointmentsDto]),
     __metadata("design:returntype", Promise)
 ], AppointmentsController.prototype, "list", null);
 __decorate([

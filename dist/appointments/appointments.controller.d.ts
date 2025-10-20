@@ -1,13 +1,12 @@
-import { AppointmentStatus } from '@prisma/client';
-import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { AppointmentsService } from './appointments.service';
 import { PaginatedAppointments } from './appointments.repository';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { ListAppointmentsDto } from './dto/list-appointments.dto';
 export declare class AppointmentsController {
     private readonly appointmentsService;
     constructor(appointmentsService: AppointmentsService);
-    list(query: PaginationQueryDto, status?: AppointmentStatus, start?: string, end?: string): Promise<PaginatedAppointments>;
+    list(query: ListAppointmentsDto): Promise<PaginatedAppointments>;
     find(id: string): Promise<{
         payments: {
             id: string;

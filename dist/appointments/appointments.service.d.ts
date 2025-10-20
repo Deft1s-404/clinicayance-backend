@@ -1,15 +1,16 @@
 import { Appointment } from '@prisma/client';
 import { ClientsService } from '../clients/clients.service';
 import { FunnelEventsService } from '../funnel-events/funnel-events.service';
-import { AppointmentQuery, AppointmentsRepository, PaginatedAppointments } from './appointments.repository';
+import { AppointmentsRepository, PaginatedAppointments } from './appointments.repository';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
+import { ListAppointmentsDto } from './dto/list-appointments.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 export declare class AppointmentsService {
     private readonly appointmentsRepository;
     private readonly clientsService;
     private readonly funnelEventsService;
     constructor(appointmentsRepository: AppointmentsRepository, clientsService: ClientsService, funnelEventsService: FunnelEventsService);
-    list(query: AppointmentQuery): Promise<PaginatedAppointments>;
+    list(query: ListAppointmentsDto): Promise<PaginatedAppointments>;
     findById(id: string): Promise<{
         payments: {
             id: string;

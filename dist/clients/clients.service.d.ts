@@ -10,15 +10,15 @@ export declare class ClientsService {
     findById(id: string): Promise<Client>;
     findByEmail(email: string): Promise<{
         id: string;
-        email: string | null;
-        name: string;
+        status: import(".prisma/client").$Enums.ClientStatus;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        email: string | null;
         phone: string | null;
         source: string | null;
         tags: string[];
         score: number;
-        status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
         age: number | null;
         country: string | null;
@@ -29,15 +29,15 @@ export declare class ClientsService {
     } | null>;
     findByPhone(phone: string): Promise<{
         id: string;
-        email: string | null;
-        name: string;
+        status: import(".prisma/client").$Enums.ClientStatus;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        email: string | null;
         phone: string | null;
         source: string | null;
         tags: string[];
         score: number;
-        status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
         age: number | null;
         country: string | null;

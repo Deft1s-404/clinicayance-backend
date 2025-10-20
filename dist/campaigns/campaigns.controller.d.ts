@@ -16,40 +16,40 @@ export declare class CampaignsController {
         }[];
     } & {
         id: string;
-        name: string;
+        status: import(".prisma/client").$Enums.CampaignStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.CampaignStatus;
+        name: string;
         channel: string;
         message: string;
         scheduledAt: Date | null;
     }>;
     create(dto: CreateCampaignDto): Promise<{
         id: string;
-        name: string;
+        status: import(".prisma/client").$Enums.CampaignStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.CampaignStatus;
+        name: string;
         channel: string;
         message: string;
         scheduledAt: Date | null;
     }>;
     update(id: string, dto: UpdateCampaignDto): Promise<{
         id: string;
-        name: string;
+        status: import(".prisma/client").$Enums.CampaignStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.CampaignStatus;
+        name: string;
         channel: string;
         message: string;
         scheduledAt: Date | null;
     }>;
     remove(id: string): Promise<{
         id: string;
-        name: string;
+        status: import(".prisma/client").$Enums.CampaignStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.CampaignStatus;
+        name: string;
         channel: string;
         message: string;
         scheduledAt: Date | null;

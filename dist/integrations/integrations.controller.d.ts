@@ -6,15 +6,15 @@ export declare class IntegrationsController {
     syncGoogleForms(dto: GoogleFormsPayloadDto): Promise<{
         client: {
             id: string;
-            email: string | null;
-            name: string;
+            status: import(".prisma/client").$Enums.ClientStatus;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            email: string | null;
             phone: string | null;
             source: string | null;
             tags: string[];
             score: number;
-            status: import(".prisma/client").$Enums.ClientStatus;
             notes: string | null;
             age: number | null;
             country: string | null;
@@ -25,20 +25,20 @@ export declare class IntegrationsController {
         };
         lead: {
             id: string;
+            clientId: string;
             createdAt: Date;
             updatedAt: Date;
             source: string | null;
             score: number;
             notes: string | null;
             stage: import(".prisma/client").$Enums.LeadStage;
-            clientId: string;
         };
         anamnesisRecord: {
             id: string;
-            email: string | null;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            email: string | null;
             phone: string | null;
             age: number | null;
             country: string | null;

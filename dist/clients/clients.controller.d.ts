@@ -9,15 +9,15 @@ export declare class ClientsController {
     list(query: PaginationQueryDto): Promise<PaginatedClients>;
     find(id: string): Promise<{
         id: string;
-        email: string | null;
-        name: string;
+        status: import(".prisma/client").$Enums.ClientStatus;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        email: string | null;
         phone: string | null;
         source: string | null;
         tags: string[];
         score: number;
-        status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
         age: number | null;
         country: string | null;
@@ -28,15 +28,15 @@ export declare class ClientsController {
     }>;
     create(dto: CreateClientDto): Promise<{
         id: string;
-        email: string | null;
-        name: string;
+        status: import(".prisma/client").$Enums.ClientStatus;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        email: string | null;
         phone: string | null;
         source: string | null;
         tags: string[];
         score: number;
-        status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
         age: number | null;
         country: string | null;
@@ -47,15 +47,15 @@ export declare class ClientsController {
     }>;
     update(id: string, dto: UpdateClientDto): Promise<{
         id: string;
-        email: string | null;
-        name: string;
+        status: import(".prisma/client").$Enums.ClientStatus;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        email: string | null;
         phone: string | null;
         source: string | null;
         tags: string[];
         score: number;
-        status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
         age: number | null;
         country: string | null;
@@ -66,15 +66,15 @@ export declare class ClientsController {
     }>;
     remove(id: string): Promise<{
         id: string;
-        email: string | null;
-        name: string;
+        status: import(".prisma/client").$Enums.ClientStatus;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        email: string | null;
         phone: string | null;
         source: string | null;
         tags: string[];
         score: number;
-        status: import(".prisma/client").$Enums.ClientStatus;
         notes: string | null;
         age: number | null;
         country: string | null;

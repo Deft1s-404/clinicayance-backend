@@ -42,7 +42,8 @@ export class AppointmentsService {
       procedure: dto.procedure,
       start: new Date(dto.start),
       end: new Date(dto.end),
-      status
+      status,
+      googleEventId: dto.googleEventId ?? null
     });
 
     await this.funnelEventsService.recordEvent(client.id, 'appointment_booked', {

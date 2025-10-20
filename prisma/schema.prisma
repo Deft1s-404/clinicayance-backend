@@ -135,6 +135,7 @@ model Appointment {
   start     DateTime
   end       DateTime
   status    AppointmentStatus @default(BOOKED)
+  googleEventId String?
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
   payments  Payment[]

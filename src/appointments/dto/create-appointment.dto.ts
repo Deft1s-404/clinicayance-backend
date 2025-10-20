@@ -17,4 +17,8 @@ export class CreateAppointmentDto {
   @IsOptional()
   @IsEnum(AppointmentStatus)
   status?: AppointmentStatus;
+
+  @IsOptional()
+  @IsString()
+  googleEventId?: string;
 }

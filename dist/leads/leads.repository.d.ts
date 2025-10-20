@@ -23,15 +23,15 @@ export declare class LeadsRepository {
     findById(id: string): Prisma.Prisma__LeadClient<({
         client: {
             id: string;
-            email: string | null;
-            name: string;
+            status: import(".prisma/client").$Enums.ClientStatus;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            email: string | null;
             phone: string | null;
             source: string | null;
             tags: string[];
             score: number;
-            status: import(".prisma/client").$Enums.ClientStatus;
             notes: string | null;
             age: number | null;
             country: string | null;
@@ -42,13 +42,13 @@ export declare class LeadsRepository {
         };
     } & {
         id: string;
+        clientId: string;
         createdAt: Date;
         updatedAt: Date;
         source: string | null;
         score: number;
         notes: string | null;
         stage: import(".prisma/client").$Enums.LeadStage;
-        clientId: string;
     }) | null, null, import("@prisma/client/runtime/library").DefaultArgs>;
     create(data: Prisma.LeadCreateInput): Promise<Lead>;
     update(id: string, data: Prisma.LeadUpdateInput): Promise<Lead>;

@@ -32,7 +32,7 @@ let AppointmentsService = class AppointmentsService {
         return appointment;
     }
     async create(dto) {
-        var _a;
+        var _a, _b;
         const client = await this.clientsService.findById(dto.clientId);
         const status = (_a = dto.status) !== null && _a !== void 0 ? _a : client_1.AppointmentStatus.BOOKED;
         const appointment = await this.appointmentsRepository.create({
@@ -40,7 +40,8 @@ let AppointmentsService = class AppointmentsService {
             procedure: dto.procedure,
             start: new Date(dto.start),
             end: new Date(dto.end),
-            status
+            status,
+            googleEventId: (_b = dto.googleEventId) !== null && _b !== void 0 ? _b : null
         });
         await this.funnelEventsService.recordEvent(client.id, 'appointment_booked', {
             appointmentId: appointment.id,

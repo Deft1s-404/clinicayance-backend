@@ -13,27 +13,27 @@ export declare class AppointmentsService {
     findById(id: string): Promise<{
         payments: {
             id: string;
+            clientId: string;
+            status: import(".prisma/client").$Enums.PaymentStatus;
             createdAt: Date;
             updatedAt: Date;
-            status: import(".prisma/client").$Enums.PaymentStatus;
-            clientId: string;
+            appointmentId: string;
             value: import("@prisma/client/runtime/library").Decimal;
             method: string;
             pixTxid: string | null;
             comprovanteUrl: string | null;
-            appointmentId: string;
         }[];
         client: {
             id: string;
-            email: string | null;
-            name: string;
+            status: import(".prisma/client").$Enums.ClientStatus;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            email: string | null;
             phone: string | null;
             source: string | null;
             tags: string[];
             score: number;
-            status: import(".prisma/client").$Enums.ClientStatus;
             notes: string | null;
             age: number | null;
             country: string | null;
@@ -44,13 +44,14 @@ export declare class AppointmentsService {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         clientId: string;
         procedure: string;
         start: Date;
         end: Date;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
+        googleEventId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     create(dto: CreateAppointmentDto): Promise<Appointment>;
     update(id: string, dto: UpdateAppointmentDto): Promise<Appointment>;

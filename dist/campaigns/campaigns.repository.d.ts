@@ -26,10 +26,10 @@ export declare class CampaignsRepository {
         }[];
     } & {
         id: string;
-        name: string;
+        status: import(".prisma/client").$Enums.CampaignStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.CampaignStatus;
+        name: string;
         channel: string;
         message: string;
         scheduledAt: Date | null;

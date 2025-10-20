@@ -5,4 +5,5 @@ export declare class CreateAppointmentDto {
     start: string;
     end: string;
     status?: AppointmentStatus;
+    googleEventId?: string;
 }

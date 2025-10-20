@@ -1,5 +1,6 @@
 import { CampaignStatus } from '@prisma/client';
-import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { Allow, IsDateString, IsEnum, IsOptional, IsString, ValidateIf } from 'class-validator';
 
 export class CreateCampaignDto {
   @IsString()
@@ -10,6 +11,13 @@ export class CreateCampaignDto {
 
   @IsString()
   message!: string;
+
+  @IsOptional()
+  @Allow()
+  @Transform(({ value }) => (value === '' ? null : value))
+  @ValidateIf((_, value) => value !== null)
+  @IsString()
+  imageUrl?: string | null;
 
   @IsOptional()
   @IsEnum(CampaignStatus)

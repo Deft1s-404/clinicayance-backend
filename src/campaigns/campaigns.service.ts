@@ -1,5 +1,5 @@
-﻿import { Injectable, NotFoundException } from '@nestjs/common';
-import { Campaign, CampaignStatus } from '@prisma/client';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Campaign, CampaignStatus, Prisma } from '@prisma/client';
 
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { CampaignsRepository, PaginatedCampaigns } from './campaigns.repository';
@@ -29,6 +29,7 @@ export class CampaignsService {
       name: dto.name,
       channel: dto.channel,
       message: dto.message,
+      imageUrl: dto.imageUrl ?? null,
       status: dto.status ?? CampaignStatus.DRAFT,
       scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined
     });
@@ -37,10 +38,16 @@ export class CampaignsService {
   async update(id: string, dto: UpdateCampaignDto): Promise<Campaign> {
     await this.findById(id);
 
-    return this.campaignsRepository.update(id, {
+    const updateData: Prisma.CampaignUpdateInput = {
       ...dto,
       scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined
-    });
+    };
+
+    if (Object.prototype.hasOwnProperty.call(dto, 'imageUrl')) {
+      updateData.imageUrl = dto.imageUrl ?? null;
+    }
+
+    return this.campaignsRepository.update(id, updateData);
   }
 
   async delete(id: string): Promise<Campaign> {

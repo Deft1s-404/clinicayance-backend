@@ -169,6 +169,7 @@ model Campaign {
   name        String
   channel     String
   message     String
+  imageUrl    String?
   status      CampaignStatus @default(DRAFT)
   scheduledAt DateTime?
   createdAt   DateTime       @default(now())

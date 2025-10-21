@@ -1,8 +1,7 @@
-﻿import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { LeadStage } from '@prisma/client';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 
-import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { CreateLeadDto } from './dto/create-lead.dto';
+import { LeadsQueryDto } from './dto/leads-query.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
 import { PaginatedLeads } from './leads.repository';
 import { LeadsService } from './leads.service';
@@ -12,8 +11,8 @@ export class LeadsController {
   constructor(private readonly leadsService: LeadsService) {}
 
   @Get()
-  list(@Query() query: PaginationQueryDto, @Query('stage') stage?: LeadStage): Promise<PaginatedLeads> {
-    return this.leadsService.list({ ...query, stage });
+  list(@Query() query: LeadsQueryDto): Promise<PaginatedLeads> {
+    return this.leadsService.list(query);
   }
 
   @Get(':id')

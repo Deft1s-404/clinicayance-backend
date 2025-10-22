@@ -1,10 +1,9 @@
 ﻿import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { PaymentStatus } from '@prisma/client';
 
-import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PaymentWebhookDto } from './dto/payment-webhook.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { PaymentsListQueryDto } from './dto/payments-list-query.dto';
 import { PaginatedPayments } from './payments.repository';
 import { PaymentsService } from './payments.service';
 
@@ -13,8 +12,8 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Get()
-  list(@Query() query: PaginationQueryDto, @Query('status') status?: PaymentStatus): Promise<PaginatedPayments> {
-    return this.paymentsService.list({ ...query, status });
+  list(@Query() query: PaymentsListQueryDto): Promise<PaginatedPayments> {
+    return this.paymentsService.list(query);
   }
 
   @Get(':id')

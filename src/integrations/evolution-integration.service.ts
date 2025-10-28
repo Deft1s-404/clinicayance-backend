@@ -742,7 +742,7 @@ export class EvolutionIntegrationService {
       groupsIgnore: true,
       webhook: {
         url: webhookUrl,
-        byEvents: true,
+        byEvents: false,
         base64: true,
         headers,
         events: ['MESSAGES_UPSERT']

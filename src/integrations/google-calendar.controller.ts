@@ -65,11 +65,15 @@ export class GoogleCalendarController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: GoogleCalendarCreateEventDto
   ) {
+    const defaultTz = process.env.APP_TIMEZONE ?? process.env.TZ ?? 'America/Sao_Paulo';
+    const withTz = (dt?: { dateTime?: string; timeZone?: string }) =>
+      dt ? { ...dt, timeZone: dt.timeZone ?? defaultTz } : undefined;
+
     return this.googleCalendarService.insertEvent(user.userId, {
       calendarId: dto.calendarId,
       requestBody: {
-        start: dto.start,
-        end: dto.end,
+        start: withTz(dto.start),
+        end: withTz(dto.end),
         summary: dto.summary,
         description: dto.description,
         attendees: dto.attendees,
@@ -87,12 +91,16 @@ export class GoogleCalendarController {
     @Param('eventId') eventId: string,
     @Body() dto: GoogleCalendarUpdateEventDto
   ) {
+    const defaultTz = process.env.APP_TIMEZONE ?? process.env.TZ ?? 'America/Sao_Paulo';
+    const withTz = (dt?: { dateTime?: string; timeZone?: string }) =>
+      dt ? { ...dt, timeZone: dt.timeZone ?? defaultTz } : undefined;
+
     return this.googleCalendarService.patchEvent(user.userId, {
       calendarId: dto.calendarId,
       eventId,
       requestBody: {
-        start: dto.start,
-        end: dto.end,
+        start: withTz(dto.start),
+        end: withTz(dto.end),
         summary: dto.summary,
         description: dto.description,
         attendees: dto.attendees,

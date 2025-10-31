@@ -113,6 +113,7 @@ model AnamnesisRecord {
   language                      String?
   phone                         String?
   email                         String?
+  interest                      String?
   previousAestheticTreatment    Boolean?
   originalResponses             Json?
   createdAt                     DateTime @default(now())

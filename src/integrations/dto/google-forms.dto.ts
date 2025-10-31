@@ -1,15 +1,5 @@
 import { LeadStage } from '@prisma/client';
-import {
-  IsArray,
-  IsDateString,
-  IsEmail,
-  IsEnum,
-  IsInt,
-  IsObject,
-  IsOptional,
-  IsString,
-  Min
-} from 'class-validator';
+import { IsArray, IsDateString, IsEmail, IsEnum, IsInt, IsObject, IsOptional, IsString, Min } from 'class-validator';
 
 export class GoogleFormsPayloadDto {
   @IsString()
@@ -56,6 +46,10 @@ export class GoogleFormsPayloadDto {
   @IsOptional()
   @IsString()
   language?: string;
+
+  @IsOptional()
+  @IsString()
+  interest?: string;
 
   @IsOptional()
   @IsObject()

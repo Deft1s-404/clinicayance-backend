@@ -15,7 +15,10 @@ export class IntegrationsService {
   ) {}
 
   async syncGoogleForms(payload: GoogleFormsPayloadDto) {
-    const tagsFromPayload = payload.tags ?? [];
+    const tagsFromPayload = [
+      ...((payload.tags ?? []).filter(Boolean) as string[]),
+      ...(payload.interest ? [payload.interest] : [])
+    ];
 
     let client =
       (payload.email && (await this.clientsService.findByEmail(payload.email))) ||
@@ -38,9 +41,7 @@ export class IntegrationsService {
         anamnesisResponses: payload.anamnesisResponses
       });
     } else {
-      const mergedTags = Array.from(
-        new Set([...(client.tags ?? []), ...tagsFromPayload, 'google_forms'])
-      );
+      const mergedTags = Array.from(new Set([...(client.tags ?? []), ...tagsFromPayload, 'google_forms']));
       await this.clientsService.update(client.id, {
         name: payload.name ?? client.name,
         email: payload.email ?? client.email ?? undefined,
@@ -84,6 +85,7 @@ export class IntegrationsService {
         language: payload.language ?? null,
         phone: payload.phone ?? null,
         email: payload.email ?? null,
+        interest: payload.interest ?? null,
         previousAestheticTreatment: previousTreatmentValue ?? undefined,
         originalResponses
       }

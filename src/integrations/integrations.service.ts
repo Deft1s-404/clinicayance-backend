@@ -15,10 +15,16 @@ export class IntegrationsService {
   ) {}
 
   async syncGoogleForms(payload: GoogleFormsPayloadDto) {
-    const tagsFromPayload = [
-      ...((payload.tags ?? []).filter(Boolean) as string[]),
-      ...(payload.interest ? [payload.interest] : [])
-    ];
+    const tagsFromPayload = Array.from(
+      new Set(
+        [
+          ...(((payload.tags ?? []).filter(Boolean) as string[]) || []),
+          ...(payload.interest ? [payload.interest] : [])
+        ]
+          .map((t) => (typeof t === 'string' ? t.trim() : t))
+          .filter(Boolean) as string[]
+      )
+    );
 
     let client =
       (payload.email && (await this.clientsService.findByEmail(payload.email))) ||
@@ -30,8 +36,8 @@ export class IntegrationsService {
         name: payload.name,
         email: payload.email,
         phone: payload.phone,
-        source: payload.source ?? 'Google Forms',
-        tags: [...tagsFromPayload, 'google_forms'],
+        source: payload.source ?? 'WhatsApp',
+        tags: tagsFromPayload,
         status: ClientStatus.NEW,
         notes: payload.notes,
         age: payload.age,
@@ -41,12 +47,12 @@ export class IntegrationsService {
         anamnesisResponses: payload.anamnesisResponses
       });
     } else {
-      const mergedTags = Array.from(new Set([...(client.tags ?? []), ...tagsFromPayload, 'google_forms']));
+      const mergedTags = Array.from(new Set([...(client.tags ?? []), ...tagsFromPayload]));
       await this.clientsService.update(client.id, {
         name: payload.name ?? client.name,
         email: payload.email ?? client.email ?? undefined,
         phone: payload.phone ?? client.phone ?? undefined,
-        source: payload.source ?? client.source ?? 'Google Forms',
+        source: payload.source ?? client.source ?? 'WhatsApp',
         tags: mergedTags,
         notes: payload.notes ?? client.notes ?? undefined,
         age: payload.age,
@@ -61,7 +67,7 @@ export class IntegrationsService {
 
     const lead = await this.leadsService.create({
       clientId: client.id,
-      source: payload.source ?? 'Google Forms',
+      source: payload.source ?? 'WhatsApp',
       notes: payload.notes,
       stage: payload.stage ?? LeadStage.NEW
     });

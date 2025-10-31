@@ -18,6 +18,7 @@ import { PaypalOAuthService } from './paypal-oauth.service';
 import { PaypalOAuthController } from './paypal-oauth.controller';
 import { PaypalTransactionsService } from './paypal-transactions.service';
 import { PaypalTransactionsController } from './paypal-transactions.controller';
+// Meta OAuth removed from project
 
 /**
  * Módulo que agrega todas as integrações externas (Google Forms, OAuth e Calendar).

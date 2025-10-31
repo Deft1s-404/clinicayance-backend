@@ -25,6 +25,10 @@ export class CreateClientDto {
 
   @IsOptional()
   @IsString()
+  address?: string;
+
+  @IsOptional()
+  @IsString()
   source?: string;
 
   @IsOptional()
@@ -56,11 +60,6 @@ export class CreateClientDto {
   @IsOptional()
   @IsString()
   language?: string;
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  intimateAssessmentPhotos?: string[];
 
   @IsOptional()
   @IsObject()

@@ -58,11 +58,6 @@ export class GoogleFormsPayloadDto {
   language?: string;
 
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  intimateAssessmentPhotos?: string[];
-
-  @IsOptional()
   @IsObject()
   anamnesisResponses?: Record<string, unknown>;
 }

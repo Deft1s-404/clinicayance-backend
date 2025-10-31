@@ -11,9 +11,22 @@ const SOURCE_SCORES: Record<string, number> = {
   Instagram: 15,
   Facebook: 10,
   Indicacao: 20,
-  Google: 12,
+  Site: 12,
   WhatsApp: 18
 };
+
+function normalizeSource(raw?: string | null): string | undefined {
+  if (!raw) return undefined;
+  const key = raw.trim().toLowerCase();
+  if (key === 'instagram') return 'Instagram';
+  if (key === 'facebook') return 'Facebook';
+  if (key === 'indicacao' || key === 'indicação') return 'Indicacao';
+  if (key === 'whatsapp' || key === 'wpp') return 'WhatsApp';
+  if (key === 'google' || key === 'google forms' || key === 'site' || key === 'website' || key === 'web')
+    return 'Site';
+  // default to original value (no score if not mapped)
+  return raw;
+}
 
 const TAG_SCORES: Record<string, number> = {
   vip: 25,
@@ -53,8 +66,9 @@ const TAG_SCORES: Record<string, number> = {
 export const calculateLeadScore = (input: ScoreInput): number => {
   let score = 50;
 
-  if (input.source && SOURCE_SCORES[input.source]) {
-    score += SOURCE_SCORES[input.source];
+  const normalized = normalizeSource(input.source);
+  if (normalized && SOURCE_SCORES[normalized]) {
+    score += SOURCE_SCORES[normalized];
   }
 
   if (input.tags && input.tags.length > 0) {

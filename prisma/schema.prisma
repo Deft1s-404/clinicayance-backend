@@ -54,12 +54,14 @@ model User {
   role      String   @default("admin")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  googleAccount       GoogleAccount?
-  googleOAuthStates   GoogleOAuthState[]
-  paypalAccount       PaypalAccount?
-  paypalOAuthStates   PaypalOAuthState[]
-  paypalTransactions  PaypalTransaction[]
-  evolutionInstances EvolutionInstance[]
+  googleAccount        GoogleAccount?
+  googleOAuthStates    GoogleOAuthState[]
+  paypalAccount        PaypalAccount?
+  paypalOAuthStates    PaypalOAuthState[]
+  paypalTransactions   PaypalTransaction[]
+  metaWhatsAppAccount  MetaWhatsAppAccount?
+  metaOAuthStates      MetaOAuthState[]
+  evolutionInstances   EvolutionInstance[]
 }
 
 model Client {
@@ -67,6 +69,7 @@ model Client {
   name         String
   email        String?        
   phone        String?
+  address      String?
   source       String?
   tags         String[]
   score        Int            @default(0)
@@ -76,7 +79,6 @@ model Client {
   country      String?
   birthDate    DateTime?
   language     String?
-  intimateAssessmentPhotos String[] @default([])
   anamnesisResponses      Json?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
@@ -309,4 +311,51 @@ model PaypalTransaction {
   @@index([clientId])
   @@index([payerEmail])
   @@index([transactionDate])
+}
+
+model MetaWhatsAppAccount {
+  id                          String   @id @default(cuid())
+  userId                      String   @unique
+  metaUserId                  String?
+  metaUserName                String?
+  email                       String?
+  businessId                  String?
+  businessName                String?
+  whatsappBusinessAccountId   String?
+  whatsappBusinessAccountName String?
+  phoneNumberId               String?
+  phoneNumber                 String?
+  accessToken                 String?
+  tokenType                   String?
+  scope                       String?
+  expiresAt                   DateTime?
+  dataAccessExpiresAt         DateTime?
+  lastSyncedAt                DateTime?
+  rawTokens                   Json?
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([metaUserId])
+  @@index([businessId])
+  @@index([whatsappBusinessAccountId])
+  @@index([phoneNumberId])
+  @@index([email])
+}
+
+model MetaOAuthState {
+  id          String    @id @default(cuid())
+  state       String    @unique
+  userId      String
+  redirectUri String
+  scope       String?
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  consumedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }

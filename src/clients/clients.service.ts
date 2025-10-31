@@ -44,6 +44,7 @@ export class ClientsService {
       name: dto.name,
       email: dto.email,
       phone: dto.phone,
+      address: dto.address ?? undefined,
       source: dto.source,
       tags: dto.tags ?? [],
       notes: dto.notes,
@@ -53,7 +54,6 @@ export class ClientsService {
       country: dto.country ?? undefined,
       birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
       language: dto.language ?? undefined,
-      intimateAssessmentPhotos: dto.intimateAssessmentPhotos ?? [],
       anamnesisResponses: dto.anamnesisResponses as Prisma.InputJsonValue | undefined
     });
   }
@@ -75,6 +75,7 @@ export class ClientsService {
     if (dto.name !== undefined) updateData.name = dto.name;
     if (dto.email !== undefined) updateData.email = dto.email;
     if (dto.phone !== undefined) updateData.phone = dto.phone;
+    if (dto.address !== undefined) updateData.address = dto.address;
     if (dto.source !== undefined) updateData.source = dto.source;
     if (dto.notes !== undefined) updateData.notes = dto.notes;
     if (dto.status !== undefined) updateData.status = dto.status;
@@ -83,8 +84,6 @@ export class ClientsService {
     if (dto.birthDate !== undefined)
       updateData.birthDate = dto.birthDate ? new Date(dto.birthDate) : null;
     if (dto.language !== undefined) updateData.language = dto.language;
-    if (dto.intimateAssessmentPhotos !== undefined)
-      updateData.intimateAssessmentPhotos = dto.intimateAssessmentPhotos;
     if (dto.anamnesisResponses !== undefined)
       updateData.anamnesisResponses = dto.anamnesisResponses as Prisma.InputJsonValue;
 

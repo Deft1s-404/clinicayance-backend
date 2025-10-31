@@ -98,4 +98,51 @@ export class LeadsService {
     await this.findById(id);
     return this.leadsRepository.delete(id);
   }
+
+  async exportCsv(query: LeadsQuery): Promise<{ filename: string; content: string }> {
+    const rows = await this.leadsRepository.exportMany(query);
+
+    const headers = [
+      'id',
+      'createdAt',
+      'clientName',
+      'clientEmail',
+      'clientPhone',
+      'source',
+      'stage',
+      'score',
+      'notes'
+    ];
+
+    const escape = (value: unknown): string => {
+      if (value === null || value === undefined) return '';
+      const str = String(value);
+      if (str.includes('"') || str.includes(',') || str.includes('\n') || str.includes('\r')) {
+        return '"' + str.replace(/"/g, '""') + '"';
+      }
+      return str;
+    };
+
+    const lines = [headers.join(',')];
+    for (const lead of rows) {
+      lines.push(
+        [
+          escape(lead.id),
+          escape(lead.createdAt.toISOString()),
+          escape(lead.client?.name ?? ''),
+          escape(lead.client?.email ?? ''),
+          escape(lead.client?.phone ?? ''),
+          escape(lead.source ?? ''),
+          escape(lead.stage),
+          escape(lead.score),
+          escape(lead.notes ?? '')
+        ].join(',')
+      );
+    }
+
+    const content = '\ufeff' + lines.join('\n');
+    const tag = query.source ? `_${query.source}` : '';
+    const filename = `leads${tag}_${new Date().toISOString().slice(0, 10)}.csv`;
+    return { filename, content };
+  }
 }

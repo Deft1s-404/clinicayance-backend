@@ -35,19 +35,12 @@ export class IntegrationsService {
         country: payload.country,
         birthDate: payload.birthDate,
         language: payload.language,
-        intimateAssessmentPhotos: payload.intimateAssessmentPhotos ?? [],
         anamnesisResponses: payload.anamnesisResponses
       });
     } else {
       const mergedTags = Array.from(
         new Set([...(client.tags ?? []), ...tagsFromPayload, 'google_forms'])
       );
-      const mergedPhotos = payload.intimateAssessmentPhotos
-        ? Array.from(
-            new Set([...(client.intimateAssessmentPhotos ?? []), ...payload.intimateAssessmentPhotos])
-          )
-        : undefined;
-
       await this.clientsService.update(client.id, {
         name: payload.name ?? client.name,
         email: payload.email ?? client.email ?? undefined,
@@ -59,7 +52,6 @@ export class IntegrationsService {
         country: payload.country,
         birthDate: payload.birthDate,
         language: payload.language,
-        intimateAssessmentPhotos: mergedPhotos,
         anamnesisResponses: payload.anamnesisResponses
       });
 

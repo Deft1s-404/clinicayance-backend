@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Res } from '@nestjs/common';
+import type { Response } from 'express';
 
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { LeadsQueryDto } from './dto/leads-query.dto';
@@ -13,6 +14,14 @@ export class LeadsController {
   @Get()
   list(@Query() query: LeadsQueryDto): Promise<PaginatedLeads> {
     return this.leadsService.list(query);
+  }
+
+  @Get('export')
+  async export(@Query() query: LeadsQueryDto, @Res() res: Response) {
+    const { filename, content } = await this.leadsService.exportCsv(query);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(content);
   }
 
   @Get(':id')

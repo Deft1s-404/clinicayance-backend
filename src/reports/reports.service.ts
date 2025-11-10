@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { AppointmentStatus, LeadStage, PaymentStatus } from '@prisma/client';
 import dayjs from 'dayjs';
+import weekOfYear from 'dayjs/plugin/weekOfYear';
+dayjs.extend(weekOfYear);
 
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -97,8 +99,10 @@ export class ReportsService {
     });
 
     const byWeek = appointments.reduce<Record<string, number>>((acc, appointment) => {
-      const week = dayjs(appointment.start).format('YYYY-[W]WW');
-      acc[week] = (acc[week] ?? 0) + 1;
+      const d = dayjs(appointment.start);
+      const weekNum = String(d.week()).padStart(2, '0');
+      const label = `${d.year()}-W${weekNum}`;
+      acc[label] = (acc[label] ?? 0) + 1;
       return acc;
     }, {});
 

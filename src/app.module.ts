@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 
 import { AppointmentsModule } from './appointments/appointments.module';
+import { AlunosModule } from './alunos/alunos.module';
 import { AuthModule } from './auth/auth.module';
 import { CampaignsModule } from './campaigns/campaigns.module';
 import { ClientsModule } from './clients/clients.module';
@@ -23,6 +24,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     AuthModule,
     ClientsModule,
+    AlunosModule,
     LeadsModule,
     AppointmentsModule,
     PaymentsModule,

@@ -46,6 +46,19 @@ enum CampaignStatus {
   CANCELLED
 }
 
+model Aluno {
+  id           String   @id @default(cuid())
+  nomeCompleto String   @map("nome_completo")
+  telefone     String?
+  pais         String?
+  email        String?
+  profissao    String?  @map("profissao")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("alunos")
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique

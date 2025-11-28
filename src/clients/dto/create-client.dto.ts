@@ -10,12 +10,16 @@ import {
   IsString,
   Min
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateClientDto {
   @IsString()
   name!: string;
 
   @IsOptional()
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.trim() || undefined : value
+  )
   @IsEmail()
   email?: string;
 

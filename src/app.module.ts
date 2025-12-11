@@ -9,6 +9,7 @@ import { CampaignsModule } from './campaigns/campaigns.module';
 import { ClientsModule } from './clients/clients.module';
 import { CommonModule } from './common/common.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { CourseLeadsModule } from './course-leads/course-leads.module';
 import { FunnelEventsModule } from './funnel-events/funnel-events.module';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { LeadsModule } from './leads/leads.module';
@@ -25,6 +26,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     ClientsModule,
     AlunosModule,
+    CourseLeadsModule,
     LeadsModule,
     AppointmentsModule,
     PaymentsModule,

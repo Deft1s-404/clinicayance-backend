@@ -59,6 +59,20 @@ model Aluno {
   @@map("alunos")
 }
 
+model CourseLead {
+  id           String   @id @default(cuid())
+  nomeCompleto String   @map("nome_completo")
+  telefone     String?
+  pais         String?
+  email        String?
+  origem       String   @default("formulario online clinica yance")
+  nota         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("course_leads")
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique

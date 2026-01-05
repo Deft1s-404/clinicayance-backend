@@ -79,10 +79,13 @@ export const calculateLeadScore = (input: ScoreInput): number => {
     score += 30;
   }
 
-  if (input.stage === LeadStage.WON) {
-    score += 40;
-  } else if (input.stage === LeadStage.QUALIFIED) {
-    score += 20;
+  switch (input.stage) {
+    case LeadStage.WON:
+      score += 40;
+      break;
+    case LeadStage.QUALIFIED:
+      score += 25;
+      break;
   }
 
   return Math.min(score, 100);

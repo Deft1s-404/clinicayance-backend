@@ -10,7 +10,7 @@ export interface LeadsQuery extends PaginationQueryDto {
 }
 
 export interface PaginatedLeads {
-  data: (Lead & { client: { id: string; name: string; email: string | null; phone: string | null } })[];
+  data: Lead[];
   total: number;
   page: number;
   limit: number;
@@ -49,7 +49,9 @@ export class LeadsRepository {
         ? {
             OR: [
               { source: { contains: search, mode: 'insensitive' } },
-              { client: { name: { contains: search, mode: 'insensitive' } } }
+              { name: { contains: search, mode: 'insensitive' } },
+              { email: { contains: search, mode: 'insensitive' } },
+              { phone: { contains: search, mode: 'insensitive' } }
             ]
           }
         : {})
@@ -60,16 +62,6 @@ export class LeadsRepository {
         where,
         skip: (page - 1) * limit,
         take: limit,
-        include: {
-          client: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              phone: true
-            }
-          }
-        },
         orderBy: { createdAt: 'desc' }
       }),
       this.prisma.lead.count({ where })
@@ -80,8 +72,7 @@ export class LeadsRepository {
 
   findById(id: string) {
     return this.prisma.lead.findUnique({
-      where: { id },
-      include: { client: true }
+      where: { id }
     });
   }
 
@@ -97,9 +88,7 @@ export class LeadsRepository {
     return this.prisma.lead.delete({ where: { id } });
   }
 
-  async exportMany(
-    query: LeadsQuery
-  ): Promise<(Lead & { client: { id: string; name: string; email: string | null; phone: string | null } })[]> {
+  async exportMany(query: LeadsQuery): Promise<Lead[]> {
     const { search, stage, source } = query;
 
     const mapSource = (s: LeadsQuery['source']): string | undefined => {
@@ -128,7 +117,9 @@ export class LeadsRepository {
         ? {
             OR: [
               { source: { contains: search, mode: 'insensitive' } },
-              { client: { name: { contains: search, mode: 'insensitive' } } }
+              { name: { contains: search, mode: 'insensitive' } },
+              { email: { contains: search, mode: 'insensitive' } },
+              { phone: { contains: search, mode: 'insensitive' } }
             ]
           }
         : {})
@@ -136,16 +127,6 @@ export class LeadsRepository {
 
     return this.prisma.lead.findMany({
       where,
-      include: {
-        client: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true
-          }
-        }
-      },
       orderBy: { createdAt: 'desc' }
     });
   }

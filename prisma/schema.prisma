@@ -88,6 +88,7 @@ model User {
   paypalTransactions   PaypalTransaction[]
   evolutionInstances   EvolutionInstance[]
   passwordResetTokens  PasswordResetToken[]
+  vindiIntegrations    VindiIntegration[]
 }
 
 model Client {
@@ -108,7 +109,6 @@ model Client {
   anamnesisResponses      Json?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
-  leads        Lead[]
   appointments Appointment[]
   payments     Payment[]
   paypalTransactions PaypalTransaction[]
@@ -148,18 +148,16 @@ model AnamnesisRecord {
 }
 
 model Lead {
-  id        String      @id @default(cuid())
-  clientId  String
+  id        String    @id @default(cuid())
+  name      String?
+  email     String?
+  phone     String?
   source    String?
   notes     String?
-  score     Int         @default(0)
-  stage     LeadStage   @default(NEW)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-
-  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
-
-  @@index([clientId])
+  score     Int       @default(0)
+  stage     LeadStage @default(NEW)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Appointment {
@@ -342,6 +340,19 @@ model PaypalTransaction {
 }
 
 // Meta integrations removed
+
+model VindiIntegration {
+  id               String   @id @default("vindi")
+  apiKey           String
+  connectedByUserId String?
+  connectedAt      DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  connectedByUser User? @relation(fields: [connectedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([connectedByUserId])
+}
 
 model PasswordResetToken {
   id         String   @id @default(cuid())

@@ -18,7 +18,9 @@ export class ReportsService {
   ) {}
 
   async funnel() {
-    const qualifiedStages = [LeadStage.QUALIFIED, LeadStage.PROPOSAL, LeadStage.WON];
+    const qualifiedStages = [
+      LeadStage.QUALIFIED, LeadStage.PROPOSAL, LeadStage.WON
+    ];
 
     const [leadCount, qualifiedLeadCount, bookedAppointments, completedAppointments, confirmedPayments] =
       await Promise.all([

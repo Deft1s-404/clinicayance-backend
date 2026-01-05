@@ -66,7 +66,9 @@ export class IntegrationsService {
     }
 
     const lead = await this.leadsService.create({
-      clientId: client.id,
+      name: payload.name ?? client.name,
+      email: payload.email ?? client.email ?? undefined,
+      phone: payload.phone ?? client.phone ?? undefined,
       source: payload.source ?? 'WhatsApp',
       notes: payload.notes,
       stage: payload.stage ?? LeadStage.NEW

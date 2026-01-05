@@ -45,7 +45,6 @@ export class ClientsRepository {
     return this.prisma.client.findUnique({
       where: { id },
       include: {
-        leads: true,
         appointments: true,
         payments: true
       }

@@ -18,6 +18,8 @@ import { PaypalOAuthService } from './paypal-oauth.service';
 import { PaypalOAuthController } from './paypal-oauth.controller';
 import { PaypalTransactionsService } from './paypal-transactions.service';
 import { PaypalTransactionsController } from './paypal-transactions.controller';
+import { VindiIntegrationService } from './vindi-integration.service';
+import { VindiIntegrationController } from './vindi-integration.controller';
 // Meta OAuth removed from project
 
 /**
@@ -32,7 +34,8 @@ import { PaypalTransactionsController } from './paypal-transactions.controller';
     PaypalOAuthController,
     PaypalTransactionsController,
     GoogleCalendarController,
-    EvolutionController
+    EvolutionController,
+    VindiIntegrationController
   ],
   providers: [
     IntegrationsService,
@@ -41,7 +44,8 @@ import { PaypalTransactionsController } from './paypal-transactions.controller';
     PaypalTransactionsService,
     GoogleCalendarService,
     EvolutionService,
-    EvolutionIntegrationService
+    EvolutionIntegrationService,
+    VindiIntegrationService
   ],
   exports: [PaypalOAuthService, PaypalTransactionsService]
 })

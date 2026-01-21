@@ -6,8 +6,10 @@ import {
   NormalizedPaypalTransaction,
   PaypalTransactionsService
 } from '../integrations/paypal-transactions.service';
+import { PaypalOAuthService } from '../integrations/paypal-oauth.service';
 import { PaypalSyncDto } from './dto/paypal-sync.dto';
 import { PaypalTransactionsFilterDto } from './dto/paypal-transactions-filter.dto';
+import { PaypalIncomingPaymentDto } from './dto/paypal-incoming-payment.dto';
 
 const DEFAULT_PAGE_SIZE = 100;
 const DEFAULT_MAX_PAGES = 10;
@@ -33,13 +35,21 @@ export interface PaypalTransactionsList {
   };
 }
 
+export interface PaypalManualTokenResponse {
+  accessToken: string;
+  tokenType: string | null;
+  expiresIn: number | null;
+  scope: string | null;
+}
+
 @Injectable()
 export class PaypalPaymentsService {
   private readonly logger = new Logger(PaypalPaymentsService.name);
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly paypalTransactionsService: PaypalTransactionsService
+    private readonly paypalTransactionsService: PaypalTransactionsService,
+    private readonly paypalOAuthService: PaypalOAuthService
   ) {}
 
   async syncTransactions(userId: string, dto: PaypalSyncDto): Promise<PaypalSyncResult> {
@@ -233,6 +243,129 @@ export class PaypalPaymentsService {
     return updated;
   }
 
+  async storeIncomingTransaction(body: PaypalIncomingPaymentDto): Promise<PaypalTransaction> {
+    const account = await this.prisma.paypalAccount.findFirst({
+      where: { merchantId: body.merchantId }
+    });
+
+    if (!account) {
+      throw new NotFoundException('Conta PayPal nao encontrada para o merchantId informado.');
+    }
+
+    const resolvedClientId =
+      (await this.resolveClientIdentifier(account.userId, body.clientId, body.clientEmail)) ?? null;
+
+    const createData: Prisma.PaypalTransactionUncheckedCreateInput = {
+      userId: account.userId,
+      clientId: resolvedClientId,
+      transactionId: body.transactionId,
+      status: body.status ?? null,
+      eventCode: null,
+      referenceId: null,
+      invoiceId: null,
+      customField: null,
+      transactionDate: this.parseDate(body.transactionDate ?? null),
+      updatedDate: this.parseDate(body.updatedDate ?? null),
+      currency: body.currency ?? null,
+      grossAmount: this.normalizeAmount(this.parseIncomingAmount(body.grossAmount)),
+      feeAmount: this.normalizeAmount(this.parseIncomingAmount(body.feeAmount)),
+      netAmount: this.normalizeAmount(this.parseIncomingAmount(body.netAmount)),
+      payerEmail: body.payerEmail ?? null,
+      payerName: body.payerName ?? null,
+      payerId: body.payerId ?? null,
+      rawPayload: this.serializeRaw(
+        typeof body.rawPayload === 'object' && body.rawPayload !== null ? body.rawPayload : undefined
+      )
+    };
+
+    const updateData: Prisma.PaypalTransactionUncheckedUpdateInput = {
+      clientId: resolvedClientId ?? undefined,
+      status: createData.status,
+      eventCode: createData.eventCode,
+      referenceId: createData.referenceId,
+      invoiceId: createData.invoiceId,
+      customField: createData.customField,
+      transactionDate: createData.transactionDate,
+      updatedDate: createData.updatedDate,
+      currency: createData.currency,
+      grossAmount: createData.grossAmount,
+      feeAmount: createData.feeAmount,
+      netAmount: createData.netAmount,
+      payerEmail: createData.payerEmail,
+      payerName: createData.payerName,
+      payerId: createData.payerId,
+      rawPayload: createData.rawPayload
+    };
+
+    return this.prisma.paypalTransaction.upsert({
+      where: {
+        userId_transactionId: {
+          userId: account.userId,
+          transactionId: body.transactionId
+        }
+      },
+      create: createData,
+      update: updateData,
+      include: {
+        client: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
+  }
+
+  async issueManualAccessToken(merchantId: string): Promise<PaypalManualTokenResponse> {
+    const account = await this.prisma.paypalAccount.findFirst({
+      where: { merchantId }
+    });
+
+    if (!account) {
+      throw new NotFoundException('Conta PayPal nao encontrada para o merchantId informado.');
+    }
+
+    const manualCredentials = this.extractManualCredentials(account.rawTokens);
+
+    if (!manualCredentials) {
+      throw new NotFoundException('Esta conta nao possui credenciais manuais configuradas.');
+    }
+
+    const tokens = await this.paypalOAuthService.requestManualClientCredentialsToken(
+      manualCredentials.clientId,
+      manualCredentials.clientSecret
+    );
+
+    const expiresIn = typeof tokens.expires_in === 'number' ? tokens.expires_in : null;
+
+    const existingRaw = this.parseRawObject(account.rawTokens) ?? {};
+
+    await this.prisma.paypalAccount.update({
+      where: { id: account.id },
+      data: {
+        accessToken: tokens.access_token,
+        tokenType: tokens.token_type ?? account.tokenType,
+        scope: tokens.scope ?? account.scope,
+        expiresAt: this.computeManualExpiry(tokens.expires_in),
+        rawTokens: this.serializeRaw({
+          ...existingRaw,
+          manualCredentials: manualCredentials,
+          connectionType: 'manual',
+          lastManualIssuedAt: new Date().toISOString()
+        })
+      }
+    });
+
+    return {
+      accessToken: tokens.access_token,
+      tokenType: tokens.token_type ?? null,
+      expiresIn,
+      scope: tokens.scope ?? null
+    };
+  }
+
   private async persistBatch(
     userId: string,
     transactions: NormalizedPaypalTransaction[]
@@ -357,6 +490,29 @@ export class PaypalPaymentsService {
     return data;
   }
 
+  private async resolveClientIdentifier(
+    userId: string,
+    clientId?: string | null,
+    clientEmail?: string | null
+  ): Promise<string | null> {
+    if (clientId) {
+      const client = await this.prisma.client.findUnique({
+        where: { id: clientId },
+        select: { id: true }
+      });
+
+      if (client) {
+        return client.id;
+      }
+    }
+
+    if (clientEmail) {
+      return this.resolveClientId(clientEmail);
+    }
+
+    return null;
+  }
+
   private extractTransactionId(transaction: NormalizedPaypalTransaction): string | null {
     return transaction.transactionId ?? transaction.paypalReferenceId ?? null;
   }
@@ -378,8 +534,70 @@ export class PaypalPaymentsService {
     return new Prisma.Decimal(value);
   }
 
-  private serializeRaw(raw: Record<string, unknown>): Prisma.InputJsonValue {
+  private serializeRaw(raw?: Record<string, unknown> | null): Prisma.InputJsonValue {
+    if (!raw) {
+      return {} as Prisma.JsonObject;
+    }
+
     return JSON.parse(JSON.stringify(raw)) as Prisma.JsonObject;
+  }
+
+  private parseIncomingAmount(value?: number | null): number | null {
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    return Number.isFinite(value) ? value : null;
+  }
+
+  private parseRawObject(raw: Prisma.JsonValue | null): Record<string, any> | null {
+    if (!raw || typeof raw !== 'object') {
+      return null;
+    }
+
+    return raw as Record<string, any>;
+  }
+
+  private computeManualExpiry(expiresIn?: number): Date | null {
+    if (!expiresIn || expiresIn <= 0) {
+      return null;
+    }
+
+    const skewMs = 60 * 1000;
+    const expiresMs = Date.now() + expiresIn * 1000 - skewMs;
+    return expiresMs > 0 ? new Date(expiresMs) : null;
+  }
+
+  private extractManualCredentials(
+    rawTokens: Prisma.JsonValue | null
+  ): { clientId: string; clientSecret: string } | null {
+    const metadata = this.parseRawObject(rawTokens);
+
+    if (!metadata) {
+      return null;
+    }
+
+    const manualBlock =
+      (metadata.manualCredentials as Record<string, any> | undefined) ?? (metadata as Record<string, any>);
+
+    const clientId =
+      typeof manualBlock?.clientId === 'string' && manualBlock.clientId.trim().length > 0
+        ? manualBlock.clientId
+        : typeof (metadata as any).manualClientId === 'string'
+          ? (metadata as any).manualClientId
+          : null;
+    const clientSecret =
+      typeof manualBlock?.clientSecret === 'string' && manualBlock.clientSecret.trim().length > 0
+        ? manualBlock.clientSecret
+        : typeof (metadata as any).manualClientSecret === 'string'
+          ? (metadata as any).manualClientSecret
+          : null;
+
+    if (clientId && clientSecret) {
+      return { clientId, clientSecret };
+    }
+
+    return null;
   }
 
   private async touchAccountSync(userId: string): Promise<void> {

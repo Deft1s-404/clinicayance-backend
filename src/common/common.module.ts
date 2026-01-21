@@ -1,4 +1,9 @@
 import { Module } from '@nestjs/common';
 
-@Module({})
+import { IntegrationKeyGuard } from './guards/integration-key.guard';
+
+@Module({
+  providers: [IntegrationKeyGuard],
+  exports: [IntegrationKeyGuard]
+})
 export class CommonModule {}

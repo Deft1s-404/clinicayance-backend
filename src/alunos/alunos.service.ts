@@ -1,16 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Aluno, Prisma } from '@prisma/client';
 
-import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { AlunosRepository, PaginatedAlunos } from './alunos.repository';
 import { CreateAlunoDto } from './dto/create-aluno.dto';
+import { ListAlunosQueryDto } from './dto/list-alunos-query.dto';
 import { UpdateAlunoDto } from './dto/update-aluno.dto';
 
 @Injectable()
 export class AlunosService {
   constructor(private readonly alunosRepository: AlunosRepository) {}
 
-  list(query: PaginationQueryDto): Promise<PaginatedAlunos> {
+  list(query: ListAlunosQueryDto): Promise<PaginatedAlunos> {
     return this.alunosRepository.findMany(query);
   }
 
@@ -30,7 +30,9 @@ export class AlunosService {
       telefone: dto.telefone ?? undefined,
       pais: dto.pais ?? undefined,
       email: dto.email ?? undefined,
-      profissao: dto.profissao ?? undefined
+      profissao: dto.profissao ?? undefined,
+      curso: dto.curso ?? undefined,
+      pagamentoOk: dto.pagamentoOk ?? false
     };
 
     return this.alunosRepository.create(data);
@@ -46,6 +48,8 @@ export class AlunosService {
     if (dto.pais !== undefined) data.pais = dto.pais;
     if (dto.email !== undefined) data.email = dto.email;
     if (dto.profissao !== undefined) data.profissao = dto.profissao;
+    if (dto.curso !== undefined) data.curso = dto.curso;
+    if (dto.pagamentoOk !== undefined) data.pagamentoOk = dto.pagamentoOk;
 
     return this.alunosRepository.update(id, data);
   }
@@ -55,4 +59,3 @@ export class AlunosService {
     return this.alunosRepository.delete(id);
   }
 }
-

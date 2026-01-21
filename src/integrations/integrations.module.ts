@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ClientsModule } from '../clients/clients.module';
 import { LeadsModule } from '../leads/leads.module';
 import { PrismaModule } from '../prisma/prisma.module';
+import { CommonModule } from '../common/common.module';
 import { IntegrationsController } from './integrations.controller';
 import { IntegrationsService } from './integrations.service';
 import { GoogleOAuthController } from './google-oauth.controller';
@@ -18,7 +19,9 @@ import { PaypalOAuthService } from './paypal-oauth.service';
 import { PaypalOAuthController } from './paypal-oauth.controller';
 import { PaypalTransactionsService } from './paypal-transactions.service';
 import { PaypalTransactionsController } from './paypal-transactions.controller';
+import { PaypalAccountsController } from './paypal-accounts.controller';
 import { VindiIntegrationService } from './vindi-integration.service';
+import { PaypalAccountsService } from './paypal-accounts.service';
 import { VindiIntegrationController } from './vindi-integration.controller';
 // Meta OAuth removed from project
 
@@ -27,12 +30,19 @@ import { VindiIntegrationController } from './vindi-integration.controller';
  * Em produção basta manter este módulo importado para disponibilizar os endpoints /api/google/*
  */
 @Module({
-  imports: [ConfigModule.forFeature(paypalConfig), ClientsModule, LeadsModule, PrismaModule],
+  imports: [
+    ConfigModule.forFeature(paypalConfig),
+    ClientsModule,
+    LeadsModule,
+    PrismaModule,
+    CommonModule
+  ],
   controllers: [
     IntegrationsController,
     GoogleOAuthController,
     PaypalOAuthController,
     PaypalTransactionsController,
+    PaypalAccountsController,
     GoogleCalendarController,
     EvolutionController,
     VindiIntegrationController
@@ -42,11 +52,12 @@ import { VindiIntegrationController } from './vindi-integration.controller';
     GoogleOAuthService,
     PaypalOAuthService,
     PaypalTransactionsService,
+    PaypalAccountsService,
     GoogleCalendarService,
     EvolutionService,
     EvolutionIntegrationService,
     VindiIntegrationService
   ],
-  exports: [PaypalOAuthService, PaypalTransactionsService]
+  exports: [PaypalOAuthService, PaypalTransactionsService, PaypalAccountsService]
 })
 export class IntegrationsModule {}

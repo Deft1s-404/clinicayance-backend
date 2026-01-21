@@ -17,6 +17,10 @@ import { PaymentsModule } from './payments/payments.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ReportsModule } from './reports/reports.module';
 import { UsersModule } from './users/users.module';
+import { WaitlistModule } from './waitlist/waitlist.module';
+import { CalendarModule } from './calendar/calendar.module';
+import { ServicesModule } from './services/services.module';
+import { KnowledgeModule } from './knowledge/knowledge.module';
 
 @Module({
   imports: [
@@ -34,7 +38,11 @@ import { UsersModule } from './users/users.module';
     ReportsModule,
     FunnelEventsModule,
     IntegrationsModule,
-    CommonModule
+    CommonModule,
+    WaitlistModule,
+    CalendarModule,
+    ServicesModule,
+    KnowledgeModule
   ],
   providers: [
     {

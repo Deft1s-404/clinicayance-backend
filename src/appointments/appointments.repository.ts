@@ -38,7 +38,15 @@ export class AppointmentsRepository {
           }
         : {}),
       ...(search
-        ? { client: { name: { contains: search, mode: 'insensitive' } } }
+        ? {
+            client: {
+              OR: [
+                { name: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
+                { phone: { contains: search, mode: 'insensitive' } }
+              ]
+            }
+          }
         : {})
     };
 
@@ -52,7 +60,8 @@ export class AppointmentsRepository {
             select: {
               id: true,
               name: true,
-              email: true
+              email: true,
+              phone: true
             }
           }
         },

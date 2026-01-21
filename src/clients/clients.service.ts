@@ -1,11 +1,68 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Client, ClientStatus, Prisma } from '@prisma/client';
+import { randomUUID } from 'crypto';
 
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { calculateLeadScore } from '../common/utils/lead-scoring.util';
 import { ClientsRepository, PaginatedClients } from './clients.repository';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
+
+interface TreatmentImageEntry {
+  id: string;
+  url: string;
+  uploadedAt: string;
+}
+
+const createImageEntry = (
+  dataUrl: string,
+  metadata?: Partial<Omit<TreatmentImageEntry, 'url'>>
+): TreatmentImageEntry => ({
+  id: metadata?.id ?? randomUUID(),
+  url: dataUrl,
+  uploadedAt: metadata?.uploadedAt ?? new Date().toISOString()
+});
+
+const normalizeImageEntries = (value: Prisma.JsonValue | null): TreatmentImageEntry[] => {
+  if (!value) return [];
+
+  const asArray = Array.isArray(value) ? value : [value];
+
+  return asArray
+    .map((item) => {
+      if (!item) return null;
+      if (typeof item === 'string') {
+        return createImageEntry(item);
+      }
+      if (Array.isArray(item)) {
+        return null;
+      }
+      if (typeof item === 'object') {
+        const record = item as Record<string, unknown>;
+        if (typeof record.url === 'string') {
+          return createImageEntry(record.url, {
+            id: typeof record.id === 'string' ? record.id : undefined,
+            uploadedAt: typeof record.uploadedAt === 'string' ? record.uploadedAt : undefined
+          });
+        }
+        const entries: TreatmentImageEntry[] = [];
+        if (typeof record.before === 'string') {
+          entries.push(createImageEntry(record.before));
+        }
+        if (typeof record.after === 'string') {
+          entries.push(createImageEntry(record.after));
+        }
+        if (entries.length > 0) {
+          return entries;
+        }
+      }
+      return null;
+    })
+    .flatMap((entry) => {
+      if (!entry) return [];
+      return Array.isArray(entry) ? entry : [entry];
+    });
+};
 
 @Injectable()
 export class ClientsService {
@@ -40,7 +97,7 @@ export class ClientsService {
       status: dto.status ?? ClientStatus.NEW
     });
 
-    return this.clientsRepository.create({
+    const createData: Prisma.ClientCreateInput = {
       name: dto.name,
       email: dto.email,
       phone: dto.phone,
@@ -55,7 +112,14 @@ export class ClientsService {
       birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
       language: dto.language ?? undefined,
       anamnesisResponses: dto.anamnesisResponses as Prisma.InputJsonValue | undefined
-    });
+    };
+
+    if (dto.treatmentImage) {
+      const images = [createImageEntry(dto.treatmentImage)];
+      createData.beforeAfterPhotos = images as unknown as Prisma.InputJsonValue;
+    }
+
+    return this.clientsRepository.create(createData);
   }
 
   async update(id: string, dto: UpdateClientDto): Promise<Client> {
@@ -86,6 +150,10 @@ export class ClientsService {
     if (dto.language !== undefined) updateData.language = dto.language;
     if (dto.anamnesisResponses !== undefined)
       updateData.anamnesisResponses = dto.anamnesisResponses as Prisma.InputJsonValue;
+    if (dto.treatmentImage) {
+      const existingImages = normalizeImageEntries(client.beforeAfterPhotos as Prisma.JsonValue | null);
+      updateData.beforeAfterPhotos = [...existingImages, createImageEntry(dto.treatmentImage)] as unknown as Prisma.InputJsonValue;
+    }
 
     return this.clientsRepository.update(id, updateData);
   }

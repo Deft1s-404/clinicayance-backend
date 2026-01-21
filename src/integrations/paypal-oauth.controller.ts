@@ -15,6 +15,7 @@ import { Response } from 'express';
 import { Public } from '../common/decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { PaypalOAuthCallbackDto } from './dto/paypal-oauth-callback.dto';
+import { PaypalManualConnectDto } from './dto/paypal-manual-connect.dto';
 import { PaypalOAuthTokenRequestDto } from './dto/paypal-oauth-token-request.dto';
 import {
   PaypalOAuthService,
@@ -55,6 +56,14 @@ export class PaypalOAuthController {
   @Get('status')
   getStatus(@CurrentUser() user: AuthenticatedUser): Promise<PaypalOAuthConnectionStatus> {
     return this.paypalOAuthService.getConnectionStatus(user.userId);
+  }
+
+  @Post('manual')
+  manualConnect(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: PaypalManualConnectDto
+  ): Promise<PaypalOAuthCallbackResult> {
+    return this.paypalOAuthService.connectWithManualCredentials(user.userId, body);
   }
 
   @Public()
@@ -133,4 +142,3 @@ export class PaypalOAuthController {
     return 'Erro inesperado ao processar o retorno do PayPal.';
   }
 }
-

@@ -1,18 +1,25 @@
 import {
   Body,
   Controller,
+  BadRequestException,
   Get,
   Param,
   Patch,
   Post,
-  Query
+  Query,
+  UseGuards
 } from '@nestjs/common';
 
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { PaypalPaymentsService } from './paypal-payments.service';
+import { Public } from '../common/decorators/public.decorator';
+import { IntegrationKeyGuard } from '../common/guards/integration-key.guard';
+import { PaypalAccountsService } from '../integrations/paypal-accounts.service';
+import { PaypalManualTokenResponse, PaypalPaymentsService } from './paypal-payments.service';
 import { PaypalSyncDto } from './dto/paypal-sync.dto';
 import { PaypalTransactionsFilterDto } from './dto/paypal-transactions-filter.dto';
 import { PaypalUpdateTransactionDto } from './dto/paypal-update-transaction.dto';
+import { PaypalAutomationSyncDto } from './dto/paypal-automation-sync.dto';
+import { PaypalIncomingPaymentDto } from './dto/paypal-incoming-payment.dto';
 
 type AuthenticatedUser = {
   userId: string;
@@ -21,7 +28,10 @@ type AuthenticatedUser = {
 
 @Controller('payments/paypal')
 export class PaypalPaymentsController {
-  constructor(private readonly paypalPaymentsService: PaypalPaymentsService) {}
+  constructor(
+    private readonly paypalPaymentsService: PaypalPaymentsService,
+    private readonly paypalAccountsService: PaypalAccountsService
+  ) {}
 
   @Post('sync')
   sync(
@@ -58,5 +68,33 @@ export class PaypalPaymentsController {
       id,
       normalizedClientId ?? null
     );
+  }
+
+  @Public()
+  @UseGuards(IntegrationKeyGuard)
+  @Post('automation/sync')
+  async automationSync(@Body() body: PaypalAutomationSyncDto) {
+    const account = await this.paypalAccountsService.findByMerchantId(body.merchantId);
+    const { merchantId: _merchantId, ...syncPayload } = body;
+
+    return this.paypalPaymentsService.syncTransactions(account.userId, syncPayload);
+  }
+
+  @Public()
+  @UseGuards(IntegrationKeyGuard)
+  @Post('incoming')
+  async storeIncoming(@Body() body: PaypalIncomingPaymentDto) {
+    return this.paypalPaymentsService.storeIncomingTransaction(body);
+  }
+
+  @Public()
+  @UseGuards(IntegrationKeyGuard)
+  @Post('tokens/manual')
+  async issueManualToken(@Body('merchantId') merchantId: string): Promise<PaypalManualTokenResponse> {
+    if (!merchantId || typeof merchantId !== 'string') {
+      throw new BadRequestException('merchantId obrigatorio.');
+    }
+
+    return this.paypalPaymentsService.issueManualAccessToken(merchantId.trim());
   }
 }

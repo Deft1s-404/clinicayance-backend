@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 
-import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { AlunosService } from './alunos.service';
 import { PaginatedAlunos } from './alunos.repository';
 import { CreateAlunoDto } from './dto/create-aluno.dto';
+import { ListAlunosQueryDto } from './dto/list-alunos-query.dto';
 import { UpdateAlunoDto } from './dto/update-aluno.dto';
 
 @Controller('alunos')
@@ -11,7 +11,7 @@ export class AlunosController {
   constructor(private readonly alunosService: AlunosService) {}
 
   @Get()
-  list(@Query() query: PaginationQueryDto): Promise<PaginatedAlunos> {
+  list(@Query() query: ListAlunosQueryDto): Promise<PaginatedAlunos> {
     return this.alunosService.list(query);
   }
 
@@ -35,4 +35,3 @@ export class AlunosController {
     return this.alunosService.delete(id);
   }
 }
-

@@ -31,6 +31,11 @@ enum AppointmentStatus {
   NO_SHOW
 }
 
+enum AppointmentType {
+  IN_PERSON
+  ONLINE
+}
+
 enum PaymentStatus {
   PENDING
   CONFIRMED
@@ -46,6 +51,18 @@ enum CampaignStatus {
   CANCELLED
 }
 
+enum CalendarEntryType {
+  AVAILABLE
+  TRAVEL
+  BLOCKED
+}
+
+enum KnowledgeEntryStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 model Aluno {
   id           String   @id @default(cuid())
   nomeCompleto String   @map("nome_completo")
@@ -53,6 +70,8 @@ model Aluno {
   pais         String?
   email        String?
   profissao    String?  @map("profissao")
+  curso        String?
+  pagamentoOk  Boolean  @default(false) @map("pagamento_ok")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -74,57 +93,58 @@ model CourseLead {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      String   @default("admin")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  googleAccount        GoogleAccount?
-  googleOAuthStates    GoogleOAuthState[]
-  paypalAccount        PaypalAccount?
-  paypalOAuthStates    PaypalOAuthState[]
-  paypalTransactions   PaypalTransaction[]
-  evolutionInstances   EvolutionInstance[]
-  passwordResetTokens  PasswordResetToken[]
-  vindiIntegrations    VindiIntegration[]
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  password            String
+  name                String
+  role                String               @default("admin")
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  googleAccount       GoogleAccount?
+  googleOAuthStates   GoogleOAuthState[]
+  paypalAccount       PaypalAccount?
+  paypalOAuthStates   PaypalOAuthState[]
+  paypalTransactions  PaypalTransaction[]
+  evolutionInstances  EvolutionInstance[]
+  passwordResetTokens PasswordResetToken[]
+  vindiIntegrations   VindiIntegration[]
 }
 
 model Client {
-  id           String         @id @default(cuid())
-  name         String
-  email        String?        
-  phone        String?
-  address      String?
-  source       String?
-  tags         String[]
-  score        Int            @default(0)
-  status       ClientStatus   @default(NEW)
-  notes        String?
-  age          Int?
-  country      String?
-  birthDate    DateTime?
-  language     String?
-  anamnesisResponses      Json?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  appointments Appointment[]
-  payments     Payment[]
+  id                 String              @id @default(cuid())
+  name               String
+  email              String?
+  phone              String?
+  address            String?
+  source             String?
+  tags               String[]
+  score              Int                 @default(0)
+  status             ClientStatus        @default(NEW)
+  notes              String?
+  age                Int?
+  country            String?
+  birthDate          DateTime?
+  language           String?
+  anamnesisResponses Json?
+  beforeAfterPhotos  Json?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  appointments       Appointment[]
+  payments           Payment[]
   paypalTransactions PaypalTransaction[]
-  funnelEvents FunnelEvent[]
+  funnelEvents       FunnelEvent[]
 }
 
 model EvolutionInstance {
-  id          String   @id @default(cuid())
-  userId      String
-  instanceId  String   @unique
-  providerInstanceId String? @unique
-  status      String   @default("pending")
-  connectedAt DateTime?
-  metadata    Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                 String    @id @default(cuid())
+  userId             String
+  instanceId         String    @unique
+  providerInstanceId String?   @unique
+  status             String    @default("pending")
+  connectedAt        DateTime?
+  metadata           Json?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -132,19 +152,19 @@ model EvolutionInstance {
 }
 
 model AnamnesisRecord {
-  id                            String   @id @default(cuid())
-  name                          String
-  age                           Int?
-  country                       String?
-  birthDate                     DateTime?
-  language                      String?
-  phone                         String?
-  email                         String?
-  interest                      String?
-  previousAestheticTreatment    Boolean?
-  originalResponses             Json?
-  createdAt                     DateTime @default(now())
-  updatedAt                     DateTime @updatedAt
+  id                         String    @id @default(cuid())
+  name                       String
+  age                        Int?
+  country                    String?
+  birthDate                  DateTime?
+  language                   String?
+  phone                      String?
+  email                      String?
+  interest                   String?
+  previousAestheticTreatment Boolean?
+  originalResponses          Json?
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
 }
 
 model Lead {
@@ -160,17 +180,31 @@ model Lead {
   updatedAt DateTime  @updatedAt
 }
 
+model WaitlistEntry {
+  id            String   @id @default(cuid())
+  name          String?
+  email         String?
+  phone         String?
+  desiredCourse String?
+  country       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 model Appointment {
-  id        String            @id @default(cuid())
-  clientId  String
-  procedure String
-  start     DateTime
-  end       DateTime
-  status    AppointmentStatus @default(BOOKED)
+  id            String            @id @default(cuid())
+  clientId      String
+  procedure     String
+  country       String            @default("Brasil")
+  type          AppointmentType   @default(IN_PERSON)
+  meetingLink   String?
+  start         DateTime
+  end           DateTime
+  status        AppointmentStatus @default(BOOKED)
   googleEventId String?
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
-  payments  Payment[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  payments      Payment[]
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
@@ -178,16 +212,16 @@ model Appointment {
 }
 
 model Payment {
-  id             String         @id @default(cuid())
+  id             String        @id @default(cuid())
   appointmentId  String
   clientId       String
-  value          Decimal        @db.Decimal(10, 2)
+  value          Decimal       @db.Decimal(10, 2)
   method         String
-  status         PaymentStatus  @default(PENDING)
+  status         PaymentStatus @default(PENDING)
   pixTxid        String?
   comprovanteUrl String?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
   client      Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
@@ -233,6 +267,68 @@ model CampaignLog {
   @@index([campaignId])
 }
 
+model CalendarEntry {
+  id          String            @id @default(cuid())
+  title       String
+  description String?
+  type        CalendarEntryType @default(AVAILABLE)
+  start       DateTime
+  end         DateTime
+  allDay      Boolean           @default(false)
+  timezone    String?
+  country     String?
+  city        String?
+  location    String?
+  notes       String?
+  metadata    Json?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([start])
+  @@index([end])
+  @@index([type, start])
+}
+
+model ServiceOffering {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  category        String?
+  country         String?
+  currency        String   @default("USD")
+  price           Decimal  @db.Decimal(12, 2)
+  durationMinutes Int?
+  notes           String?
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([country])
+  @@index([active])
+}
+
+model KnowledgeEntry {
+  id          String               @id @default(cuid())
+  title       String
+  slug        String?              @unique
+  summary     String?              @db.Text
+  content     String               @db.Text
+  tags        String[]             @default([])
+  category    String?
+  audience    String?
+  language    String?              @default("pt-BR")
+  status      KnowledgeEntryStatus @default(DRAFT)
+  priority    Int                  @default(0)
+  sourceUrl   String?
+  metadata    Json?
+  publishedAt DateTime?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@index([status, updatedAt])
+  @@index([priority])
+}
+
 model GoogleAccount {
   id           String    @id @default(cuid())
   userId       String    @unique
@@ -269,21 +365,21 @@ model GoogleOAuthState {
 }
 
 model PaypalAccount {
-  id             String    @id @default(cuid())
-  userId         String    @unique
-  paypalPayerId  String?
-  merchantId     String?
-  businessName   String?
-  email          String?
-  accessToken    String?
-  refreshToken   String?
-  tokenType      String?
-  scope          String?
-  expiresAt      DateTime?
-  lastSyncedAt   DateTime?
-  rawTokens      Json?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  paypalPayerId String?
+  merchantId    String?
+  businessName  String?
+  email         String?
+  accessToken   String?
+  refreshToken  String?
+  tokenType     String?
+  scope         String?
+  expiresAt     DateTime?
+  lastSyncedAt  DateTime?
+  rawTokens     Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -308,7 +404,7 @@ model PaypalOAuthState {
 }
 
 model PaypalTransaction {
-  id              String   @id @default(cuid())
+  id              String    @id @default(cuid())
   userId          String
   clientId        String?
   transactionId   String
@@ -320,15 +416,15 @@ model PaypalTransaction {
   transactionDate DateTime?
   updatedDate     DateTime?
   currency        String?
-  grossAmount     Decimal? @db.Decimal(12, 2)
-  feeAmount       Decimal? @db.Decimal(12, 2)
-  netAmount       Decimal? @db.Decimal(12, 2)
+  grossAmount     Decimal?  @db.Decimal(12, 2)
+  feeAmount       Decimal?  @db.Decimal(12, 2)
+  netAmount       Decimal?  @db.Decimal(12, 2)
   payerEmail      String?
   payerName       String?
   payerId         String?
   rawPayload      Json?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
@@ -342,12 +438,12 @@ model PaypalTransaction {
 // Meta integrations removed
 
 model VindiIntegration {
-  id               String   @id @default("vindi")
-  apiKey           String
+  id                String    @id @default("vindi")
+  apiKey            String
   connectedByUserId String?
-  connectedAt      DateTime?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  connectedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   connectedByUser User? @relation(fields: [connectedByUserId], references: [id], onDelete: SetNull)
 
@@ -355,12 +451,12 @@ model VindiIntegration {
 }
 
 model PasswordResetToken {
-  id         String   @id @default(cuid())
-  userId     String
-  tokenHash  String   @unique
-  expiresAt  DateTime
-  usedAt     DateTime?
-  createdAt  DateTime @default(now())
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

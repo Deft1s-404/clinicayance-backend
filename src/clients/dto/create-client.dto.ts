@@ -68,4 +68,8 @@ export class CreateClientDto {
   @IsOptional()
   @IsObject()
   anamnesisResponses?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsString()
+  treatmentImage?: string;
 }

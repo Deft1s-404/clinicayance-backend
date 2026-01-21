@@ -7,6 +7,7 @@ export interface PaypalEnvConfig {
   baseUrl: string;
   authBaseUrl: string;
   scopes: string[];
+  webhookId: string | null;
 }
 
 const DEFAULT_API_BASE_URL = 'https://api-m.sandbox.paypal.com';
@@ -19,7 +20,7 @@ const normalizeScopes = (scopesRaw: string | undefined | null): string[] => {
 
   return scopesRaw
     .split(/\s+/)
-    .map((scope) => scope.trim())
+    .map((scope) => scope.trim().replace(/^['"]+/, '').replace(/['"]+$/, ''))
     .filter((scope) => scope.length > 0);
 };
 
@@ -33,9 +34,9 @@ export const paypalConfig = registerAs('paypal', (): PaypalEnvConfig => {
     redirectUri: process.env.PAYPAL_REDIRECT_URI?.trim() || null,
     baseUrl,
     authBaseUrl,
-    scopes: normalizeScopes(process.env.PAYPAL_SCOPES)
+    scopes: normalizeScopes(process.env.PAYPAL_SCOPES),
+    webhookId: process.env.PAYPAL_WEBHOOK_ID?.trim() || null
   };
 });
 
 export type PaypalConfig = ConfigType<typeof paypalConfig>;
-

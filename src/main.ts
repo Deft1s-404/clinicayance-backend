@@ -8,13 +8,25 @@ import { AppModule } from './app.module';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { cors: true });
 
+  const rawBodySaver = (req: any, _res: any, buf: Buffer) => {
+    if (buf?.length) {
+      req.rawBody = buf.toString('utf8');
+    }
+  };
+
   // Aumenta o limite de tamanho do corpo das requisições
   // para suportar imagens base64 em campanhas
-  app.use(json({ limit: '10mb' }));
+  app.use(
+    json({
+      limit: '10mb',
+      verify: rawBodySaver
+    })
+  );
   app.use(
     urlencoded({
       limit: '10mb',
-      extended: true
+      extended: true,
+      verify: rawBodySaver
     })
   );
 

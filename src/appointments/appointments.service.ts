@@ -1,5 +1,6 @@
-﻿import { Injectable, NotFoundException } from '@nestjs/common';
-import { Appointment, AppointmentStatus } from '@prisma/client';
+
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Appointment, AppointmentStatus, AppointmentType } from '@prisma/client';
 
 import { ClientsService } from '../clients/clients.service';
 import { FunnelEventsService } from '../funnel-events/funnel-events.service';
@@ -33,10 +34,15 @@ export class AppointmentsService {
   async create(dto: CreateAppointmentDto): Promise<Appointment> {
     const client = await this.clientsService.findById(dto.clientId);
     const status = dto.status ?? AppointmentStatus.BOOKED;
+    const type = dto.type ?? AppointmentType.IN_PERSON;
+    const meetingLink = dto.meetingLink?.trim() || null;
 
     const appointment = await this.appointmentsRepository.create({
       client: { connect: { id: dto.clientId } },
       procedure: dto.procedure,
+      country: dto.country ?? 'Brasil',
+      type,
+      meetingLink,
       start: new Date(dto.start),
       end: new Date(dto.end),
       status,
@@ -60,12 +66,17 @@ export class AppointmentsService {
   async update(id: string, dto: UpdateAppointmentDto): Promise<Appointment> {
     const appointment = await this.findById(id);
     const status = dto.status ?? appointment.status;
+    const type = dto.type ?? appointment.type ?? AppointmentType.IN_PERSON;
+    const meetingLink =
+      dto.meetingLink !== undefined ? dto.meetingLink?.trim() || null : appointment.meetingLink ?? null;
 
     const updated = await this.appointmentsRepository.update(id, {
       ...dto,
       start: dto.start ? new Date(dto.start) : undefined,
       end: dto.end ? new Date(dto.end) : undefined,
-      status
+      status,
+      type,
+      meetingLink
     });
 
     if (appointment.status !== status) {

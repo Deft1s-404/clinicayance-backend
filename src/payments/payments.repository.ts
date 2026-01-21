@@ -41,8 +41,26 @@ export class PaymentsRepository {
         ? {
             OR: [
               { method: { contains: search, mode: 'insensitive' } },
-              { appointment: { client: { name: { contains: search, mode: 'insensitive' } } } },
-              { client: { name: { contains: search, mode: 'insensitive' } } }
+              {
+                appointment: {
+                  client: {
+                    OR: [
+                      { name: { contains: search, mode: 'insensitive' } },
+                      { email: { contains: search, mode: 'insensitive' } },
+                      { phone: { contains: search, mode: 'insensitive' } }
+                    ]
+                  }
+                }
+              },
+              {
+                client: {
+                  OR: [
+                    { name: { contains: search, mode: 'insensitive' } },
+                    { email: { contains: search, mode: 'insensitive' } },
+                    { phone: { contains: search, mode: 'insensitive' } }
+                  ]
+                }
+              }
             ]
           }
         : {})

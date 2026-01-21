@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Aluno, Prisma } from '@prisma/client';
 
-import { PaginationQueryDto } from '../common/dto/pagination.dto';
+import { ListAlunosQueryDto } from './dto/list-alunos-query.dto';
 import { PrismaService } from '../prisma/prisma.service';
 
 export interface PaginatedAlunos {
@@ -15,28 +15,73 @@ export interface PaginatedAlunos {
 export class AlunosRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findMany(query: PaginationQueryDto): Promise<PaginatedAlunos> {
-    const { page = 1, limit = 20, search } = query;
+  async findMany(query: ListAlunosQueryDto): Promise<PaginatedAlunos> {
+    const { page = 1, limit = 20, search, curso, pais, pagamentoOk, nome, contato } = query;
 
-    const where: Prisma.AlunoWhereInput | undefined = search
-      ? {
-          OR: [
-            { nomeCompleto: { contains: search, mode: 'insensitive' } },
-            { email: { contains: search, mode: 'insensitive' } },
-            { telefone: { contains: search, mode: 'insensitive' } },
-            { profissao: { contains: search, mode: 'insensitive' } }
-          ]
-        }
+    const searchConditions: Prisma.AlunoWhereInput[] | undefined = search
+      ? [
+          { nomeCompleto: { contains: search, mode: Prisma.QueryMode.insensitive } },
+          { email: { contains: search, mode: Prisma.QueryMode.insensitive } },
+          { telefone: { contains: search, mode: Prisma.QueryMode.insensitive } },
+          { profissao: { contains: search, mode: Prisma.QueryMode.insensitive } },
+          { curso: { contains: search, mode: Prisma.QueryMode.insensitive } }
+        ]
       : undefined;
+
+    const filterConditions: Prisma.AlunoWhereInput[] = [];
+
+    if (curso) {
+      filterConditions.push({
+        curso: { contains: curso, mode: Prisma.QueryMode.insensitive }
+      });
+    }
+
+    if (pais) {
+      filterConditions.push({
+        pais: { contains: pais, mode: Prisma.QueryMode.insensitive }
+      });
+    }
+
+    if (pagamentoOk !== undefined) {
+      filterConditions.push({ pagamentoOk });
+    }
+
+    if (nome) {
+      filterConditions.push({
+        nomeCompleto: { contains: nome, mode: Prisma.QueryMode.insensitive }
+      });
+    }
+
+    if (contato) {
+      filterConditions.push({
+        OR: [
+          { email: { contains: contato, mode: Prisma.QueryMode.insensitive } },
+          { telefone: { contains: contato, mode: Prisma.QueryMode.insensitive } }
+        ]
+      });
+    }
+
+    const where: Prisma.AlunoWhereInput = {};
+
+    if (searchConditions) {
+      where.OR = searchConditions;
+    }
+
+    if (filterConditions.length > 0) {
+      where.AND = filterConditions;
+    }
+
+    const finalWhere =
+      !searchConditions && filterConditions.length === 0 ? undefined : where;
 
     const [data, total] = await Promise.all([
       this.prisma.aluno.findMany({
-        where,
+        where: finalWhere,
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { createdAt: 'desc' }
       }),
-      this.prisma.aluno.count({ where })
+      this.prisma.aluno.count({ where: finalWhere })
     ]);
 
     return { data, total, page, limit };
@@ -58,4 +103,3 @@ export class AlunosRepository {
     return this.prisma.aluno.delete({ where: { id } });
   }
 }
-

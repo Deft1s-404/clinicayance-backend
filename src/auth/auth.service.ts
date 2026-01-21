@@ -40,11 +40,12 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const normalizedRole = (dto.role ?? 'USER').toUpperCase();
     const user = await this.usersService.create({
       email: dto.email,
       name: dto.name,
       password: hashedPassword,
-      role: dto.role ?? 'user'
+      role: normalizedRole
     });
 
     return this.buildAuthPayload(user.id, user.name, user.email, user.role);
@@ -67,6 +68,7 @@ export class AuthService {
   }
 
   private buildAuthPayload(id: string, name: string, email: string, role: string): AuthPayload {
+    const normalizedRole = (role ?? 'USER').toUpperCase();
     const accessToken = this.jwtService.sign(
       { sub: id, email },
       { expiresIn: '7d' }
@@ -78,7 +80,7 @@ export class AuthService {
         id,
         name,
         email,
-        role
+        role: normalizedRole
       }
     };
   }

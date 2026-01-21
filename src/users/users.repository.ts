@@ -18,4 +18,20 @@ export class UsersRepository {
   findById(id: string): Promise<User | null> {
     return this.prisma.user.findUnique({ where: { id } });
   }
+
+  findMany(params: Prisma.UserFindManyArgs): Promise<User[]> {
+    return this.prisma.user.findMany(params);
+  }
+
+  count(where?: Prisma.UserWhereInput): Promise<number> {
+    return this.prisma.user.count({ where });
+  }
+
+  update(id: string, data: Prisma.UserUpdateInput): Promise<User> {
+    return this.prisma.user.update({ where: { id }, data });
+  }
+
+  delete(id: string): Promise<User> {
+    return this.prisma.user.delete({ where: { id } });
+  }
 }

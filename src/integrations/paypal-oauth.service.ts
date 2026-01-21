@@ -11,6 +11,7 @@ import { randomUUID } from 'crypto';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { PaypalOAuthCallbackDto } from './dto/paypal-oauth-callback.dto';
+import { PaypalManualConnectDto } from './dto/paypal-manual-connect.dto';
 import { paypalConfig, PaypalConfig } from './paypal.config';
 
 export interface PaypalOAuthStatePayload {
@@ -41,6 +42,8 @@ export interface PaypalOAuthTokens {
   nonce?: string;
   refresh_token?: string;
   refresh_token_expires_in?: number;
+  id_token?: string;
+  payer_id?: string;
 }
 
 export interface PaypalOAuthTokenResponse {
@@ -100,12 +103,13 @@ export class PaypalOAuthService {
       }
     });
 
-    const authorizeUrl = this.buildAuthorizeUrl({
-      clientId,
-      redirectUri,
-      state,
-      scope: scopes.join(' ')
-    });
+      const authorizeUrl = this.buildAuthorizeUrl({
+        clientId,
+        redirectUri,
+        state,
+        scope: scopes.join(' '),
+        nonce: state
+      });
 
     return {
       state,
@@ -148,7 +152,23 @@ export class PaypalOAuthService {
     const tokens = await this.exchangeAuthorizationCode(query.code, stateRecord.redirectUri);
     const expiresAtDate = this.computeExpiryDate(tokens.expires_in);
 
-    const profile = await this.fetchPaypalProfile(tokens.access_token);
+    const identityFallback = this.extractIdentityFromIdToken(tokens.id_token);
+    const existingAccount = await this.prisma.paypalAccount.findUnique({
+      where: { userId: stateRecord.userId }
+    });
+
+    if (!identityFallback.payerId && typeof tokens.payer_id === 'string') {
+      identityFallback.payerId = tokens.payer_id;
+    }
+
+    const profile = await this.fetchPaypalProfile(
+      tokens.access_token,
+      identityFallback.payerId ?? existingAccount?.paypalPayerId ?? null
+    );
+    const resolvedPayerId =
+      profile?.payerId ?? identityFallback.payerId ?? existingAccount?.paypalPayerId ?? null;
+    const resolvedMerchantId = profile?.merchantId ?? identityFallback.merchantId ?? null;
+    const resolvedEmail = profile?.email ?? identityFallback.email ?? null;
 
     await this.prisma.$transaction([
       this.prisma.paypalOAuthState.update({
@@ -159,28 +179,28 @@ export class PaypalOAuthService {
         where: { userId: stateRecord.userId },
         create: {
           userId: stateRecord.userId,
-          paypalPayerId: profile?.payerId ?? null,
-          merchantId: profile?.merchantId ?? null,
+          paypalPayerId: resolvedPayerId,
+          merchantId: resolvedMerchantId,
           businessName: profile?.businessName ?? null,
-          email: profile?.email ?? null,
+          email: resolvedEmail,
           accessToken: tokens.access_token,
           refreshToken: tokens.refresh_token ?? null,
           tokenType: tokens.token_type ?? null,
           scope: tokens.scope ?? this.resolveScopes().join(' '),
           expiresAt: expiresAtDate,
-          rawTokens: this.serializeTokens(tokens)
+          rawTokens: this.serializeTokens(tokens, { connectionType: 'oauth' })
         },
         update: {
-          paypalPayerId: profile?.payerId ?? null,
-          merchantId: profile?.merchantId ?? null,
+          paypalPayerId: resolvedPayerId,
+          merchantId: resolvedMerchantId,
           businessName: profile?.businessName ?? null,
-          email: profile?.email ?? null,
+          email: resolvedEmail,
           accessToken: tokens.access_token,
           refreshToken: tokens.refresh_token ?? null,
           tokenType: tokens.token_type ?? null,
           scope: tokens.scope ?? this.resolveScopes().join(' '),
           expiresAt: expiresAtDate,
-          rawTokens: this.serializeTokens(tokens)
+          rawTokens: this.serializeTokens(tokens, { connectionType: 'oauth' })
         }
       })
     ]);
@@ -192,7 +212,79 @@ export class PaypalOAuthService {
         expiresAt: expiresAtDate ? expiresAtDate.toISOString() : null,
         hasRefreshToken: Boolean(tokens.refresh_token),
         scope: tokens.scope,
-        email: profile?.email ?? null
+        email: resolvedEmail
+      }
+    };
+  }
+
+  async connectWithManualCredentials(
+    userId: string,
+    dto: PaypalManualConnectDto
+  ): Promise<PaypalOAuthCallbackResult> {
+    const clientId = dto.clientId.trim();
+    const clientSecret = dto.clientSecret.trim();
+
+    if (!clientId || !clientSecret) {
+      throw new BadRequestException('Informe o client_id e client_secret do PayPal.');
+    }
+
+    const tokens = await this.requestManualClientCredentialsToken(clientId, clientSecret);
+    const expiresAtDate = this.computeExpiryDate(tokens.expires_in);
+    const profile = await this.fetchPaypalProfile(tokens.access_token);
+
+    const resolvedPayerId = profile?.payerId ?? tokens.payer_id ?? null;
+    const resolvedMerchantId = profile?.merchantId ?? null;
+    const resolvedEmail = profile?.email ?? null;
+
+    await this.prisma.paypalAccount.upsert({
+      where: { userId },
+      create: {
+        userId,
+        paypalPayerId: resolvedPayerId,
+        merchantId: resolvedMerchantId,
+        businessName: profile?.businessName ?? null,
+        email: resolvedEmail,
+        accessToken: tokens.access_token,
+        refreshToken: null,
+        tokenType: tokens.token_type ?? null,
+        scope: tokens.scope ?? null,
+        expiresAt: expiresAtDate,
+        rawTokens: this.serializeTokens(tokens, {
+          connectionType: 'manual',
+          manualCredentials: {
+            clientId,
+            clientSecret
+          }
+        })
+      },
+      update: {
+        paypalPayerId: resolvedPayerId,
+        merchantId: resolvedMerchantId,
+        businessName: profile?.businessName ?? null,
+        email: resolvedEmail,
+        accessToken: tokens.access_token,
+        refreshToken: null,
+        tokenType: tokens.token_type ?? null,
+        scope: tokens.scope ?? null,
+        expiresAt: expiresAtDate,
+        rawTokens: this.serializeTokens(tokens, {
+          connectionType: 'manual',
+          manualCredentials: {
+            clientId,
+            clientSecret
+          }
+        })
+      }
+    });
+
+    return {
+      message: 'Conta PayPal conectada com sucesso.',
+      connection: {
+        userId,
+        expiresAt: expiresAtDate ? expiresAtDate.toISOString() : null,
+        hasRefreshToken: false,
+        scope: tokens.scope,
+        email: resolvedEmail
       }
     };
   }
@@ -229,6 +321,42 @@ export class PaypalOAuthService {
       };
     }
 
+    if (this.isManualAccount(account)) {
+      const manualCredentials = this.extractManualCredentials(account);
+
+      if (!manualCredentials) {
+        throw new BadRequestException('Credenciais manuais do PayPal nao configuradas.');
+      }
+
+      const manualTokens = await this.requestManualClientCredentialsToken(
+        manualCredentials.clientId,
+        manualCredentials.clientSecret
+      );
+      const manualExpiresAt = this.computeExpiryDate(manualTokens.expires_in);
+
+      await this.prisma.paypalAccount.update({
+        where: { userId: account.userId },
+        data: {
+          accessToken: manualTokens.access_token,
+          tokenType: manualTokens.token_type ?? null,
+          scope: manualTokens.scope ?? null,
+          expiresAt: manualExpiresAt,
+          rawTokens: this.serializeTokens(manualTokens, {
+            connectionType: 'manual',
+            manualCredentials
+          })
+        }
+      });
+
+      return {
+        accessToken: manualTokens.access_token,
+        expiresAt: manualExpiresAt ? manualExpiresAt.toISOString() : null,
+        tokenType: manualTokens.token_type ?? null,
+        scope: manualTokens.scope ?? null,
+        refreshed: true
+      };
+    }
+
     if (!account.refreshToken) {
       throw new BadRequestException(
         'Nao foi possivel renovar o token do PayPal pois nao ha refresh token salvo.'
@@ -246,7 +374,7 @@ export class PaypalOAuthService {
         tokenType: tokens.token_type ?? account.tokenType,
         scope: tokens.scope ?? account.scope,
         expiresAt: expiresAtDate,
-        rawTokens: this.serializeTokens(tokens)
+        rawTokens: this.serializeTokens(tokens, { connectionType: 'oauth' })
       }
     });
 
@@ -297,6 +425,7 @@ export class PaypalOAuthService {
     redirectUri: string;
     state: string;
     scope: string;
+    nonce?: string;
   }): string {
     const base = this.config.authBaseUrl || 'https://www.sandbox.paypal.com';
     const url = new URL('/signin/authorize', base.endsWith('/') ? base : `${base}/`);
@@ -305,6 +434,9 @@ export class PaypalOAuthService {
     url.searchParams.set('redirect_uri', params.redirectUri);
     url.searchParams.set('state', params.state);
     url.searchParams.set('scope', params.scope);
+    if (params.nonce) {
+      url.searchParams.set('nonce', params.nonce);
+    }
     return url.toString();
   }
 
@@ -384,7 +516,71 @@ export class PaypalOAuthService {
     return tokens;
   }
 
-  private async fetchPaypalProfile(accessToken: string): Promise<PaypalUserProfile | null> {
+  async requestManualClientCredentialsToken(
+    clientId: string,
+    clientSecret: string
+  ): Promise<PaypalOAuthTokens> {
+    const tokenEndpoint = this.buildTokenEndpoint();
+    const fetchFn = (globalThis as { fetch?: typeof fetch }).fetch;
+
+    if (!fetchFn) {
+      this.logger.error('Fetch API indisponivel no ambiente do servidor.');
+      throw new InternalServerErrorException('Fetch API indisponivel no ambiente do servidor.');
+    }
+
+    const headers = {
+      Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Accept: 'application/json'
+    };
+
+    let response: Response;
+    try {
+      response = await fetchFn(tokenEndpoint, {
+        method: 'POST',
+        headers,
+        body: new URLSearchParams({ grant_type: 'client_credentials' }).toString()
+      });
+    } catch (error) {
+      this.logger.error(
+        'Erro ao conectar com o PayPal OAuth usando credenciais manuais.',
+        error instanceof Error ? error.stack : String(error)
+      );
+      throw new InternalServerErrorException('Nao foi possivel conectar ao PayPal OAuth.');
+    }
+
+    let data: PaypalOAuthTokens | Record<string, unknown>;
+    try {
+      data = await response.json();
+    } catch (error) {
+      this.logger.error(
+        'Erro ao interpretar resposta do PayPal OAuth (credenciais manuais).',
+        error instanceof Error ? error.stack : String(error)
+      );
+      throw new InternalServerErrorException('Resposta invalida do PayPal OAuth.');
+    }
+
+    if (!response.ok) {
+      this.logger.error(`Falha ao obter tokens do PayPal (manual): ${JSON.stringify(data)}`);
+      throw new InternalServerErrorException('Nao foi possivel obter tokens do PayPal.');
+    }
+
+    const tokens = data as PaypalOAuthTokens;
+
+    if (!tokens.access_token) {
+      this.logger.error(
+        `Resposta inesperada do PayPal OAuth (manual): ${JSON.stringify(tokens)}`
+      );
+      throw new InternalServerErrorException('Resposta inesperada do PayPal OAuth.');
+    }
+
+    return tokens;
+  }
+
+  private async fetchPaypalProfile(
+    accessToken: string,
+    payerIdForAssertion?: string | null
+  ): Promise<PaypalUserProfile | null> {
     const fetchFn = (globalThis as {
       fetch?: (input: string, init?: unknown) => Promise<any>;
     }).fetch;
@@ -476,6 +672,48 @@ export class PaypalOAuthService {
     return null;
   }
 
+  private extractIdentityFromIdToken(
+    idToken?: string
+  ): { payerId: string | null; merchantId: string | null; email: string | null } {
+    if (!idToken) {
+      return { payerId: null, merchantId: null, email: null };
+    }
+
+    const parts = idToken.split('.');
+    if (parts.length < 2) {
+      return { payerId: null, merchantId: null, email: null };
+    }
+
+    try {
+      const payloadJson = Buffer.from(parts[1], 'base64').toString('utf8');
+      const payload = JSON.parse(payloadJson) as Record<string, any>;
+      const payerId =
+        typeof payload.payer_id === 'string'
+          ? payload.payer_id
+          : typeof payload.payerId === 'string'
+            ? payload.payerId
+            : null;
+      const merchantId =
+        typeof payload.merchant_id === 'string'
+          ? payload.merchant_id
+          : typeof payload.user_id === 'string'
+            ? payload.user_id
+            : null;
+      const email = typeof payload.email === 'string' ? payload.email : null;
+      return { payerId, merchantId, email };
+    } catch (error) {
+      this.logger.debug(
+        'Nao foi possivel interpretar o id_token do PayPal para extrair o payerId.',
+        error instanceof Error ? error.message : String(error)
+      );
+      return { payerId: null, merchantId: null, email: null };
+    }
+  }
+
+  private generatePaypalAuthAssertion(): string | null {
+    return null;
+  }
+
   private extractMerchantId(payload: Record<string, any>): string | null {
     if (typeof payload.merchant_id === 'string') {
       return payload.merchant_id;
@@ -546,7 +784,63 @@ export class PaypalOAuthService {
     return ['openid', 'profile', 'email'];
   }
 
-  private serializeTokens(tokens: PaypalOAuthTokens): Prisma.InputJsonValue {
-    return JSON.parse(JSON.stringify(tokens)) as Prisma.JsonObject;
+  private isManualAccount(account: { rawTokens: Prisma.JsonValue | null; refreshToken: string | null }): boolean {
+    const metadata = this.extractTokenMetadata(account.rawTokens);
+
+    if (metadata?.connectionType === 'manual') {
+      return true;
+    }
+
+    if (metadata?.connectionType === 'oauth') {
+      return false;
+    }
+
+    return !account.refreshToken;
+  }
+
+  private extractManualCredentials(account: {
+    rawTokens: Prisma.JsonValue | null;
+  }): { clientId: string; clientSecret: string } | null {
+    const metadata = this.extractTokenMetadata(account.rawTokens);
+
+    if (!metadata) {
+      return null;
+    }
+
+    const credentials = metadata.manualCredentials ?? {
+      clientId: metadata.manualClientId,
+      clientSecret: metadata.manualClientSecret
+    };
+
+    if (
+      credentials &&
+      typeof credentials.clientId === 'string' &&
+      credentials.clientId.trim().length > 0 &&
+      typeof credentials.clientSecret === 'string' &&
+      credentials.clientSecret.trim().length > 0
+    ) {
+      return {
+        clientId: credentials.clientId,
+        clientSecret: credentials.clientSecret
+      };
+    }
+
+    return null;
+  }
+
+  private extractTokenMetadata(rawTokens: Prisma.JsonValue | null): Record<string, any> | null {
+    if (!rawTokens || typeof rawTokens !== 'object') {
+      return null;
+    }
+
+    return rawTokens as Record<string, any>;
+  }
+
+  private serializeTokens(
+    tokens: PaypalOAuthTokens,
+    metadata?: Record<string, any>
+  ): Prisma.InputJsonValue {
+    const payload = metadata ? { ...tokens, ...metadata } : { ...tokens };
+    return JSON.parse(JSON.stringify(payload)) as Prisma.JsonObject;
   }
 }

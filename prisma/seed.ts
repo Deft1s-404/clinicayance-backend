@@ -1,4 +1,12 @@
-import { AppointmentStatus, CampaignStatus, ClientStatus, LeadStage, PaymentStatus, PrismaClient } from '@prisma/client';
+import {
+  AppointmentStatus,
+  CalendarEntryType,
+  CampaignStatus,
+  ClientStatus,
+  LeadStage,
+  PaymentStatus,
+  PrismaClient
+} from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -43,6 +51,7 @@ async function main(): Promise<void> {
     data: {
       clientId: client.id,
       procedure: 'Aplicacao de botox',
+      country: 'Brasil',
       start: new Date(),
       end: new Date(Date.now() + 60 * 60 * 1000),
       status: AppointmentStatus.COMPLETED
@@ -95,6 +104,83 @@ async function main(): Promise<void> {
       campaignId: campaign.id,
       message: 'Campanha criada pelo seed inicial.'
     }
+  });
+
+  const today = new Date();
+  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+  const travelStart = new Date(today.getTime() + 5 * 24 * 60 * 60 * 1000);
+  const travelEnd = new Date(today.getTime() + 8 * 24 * 60 * 60 * 1000);
+
+  await prisma.calendarEntry.createMany({
+    data: [
+      {
+        title: 'Atendimentos em Sao Paulo',
+        description: 'Horario padrao de consultas presenciais',
+        type: CalendarEntryType.AVAILABLE,
+        start: new Date(today.setHours(9, 0, 0, 0)),
+        end: new Date(today.setHours(17, 0, 0, 0)),
+        timezone: 'America/Sao_Paulo',
+        country: 'Brasil',
+        city: 'Sao Paulo',
+        location: 'Clinica Matriz',
+        notes: 'Disponível para agendamentos presenciais'
+      },
+      {
+        title: 'Atendimento remoto na Europa',
+        type: CalendarEntryType.AVAILABLE,
+        start: new Date(tomorrow.setHours(6, 0, 0, 0)),
+        end: new Date(tomorrow.setHours(12, 0, 0, 0)),
+        timezone: 'Europe/Madrid',
+        country: 'Espanha',
+        city: 'Madrid',
+        location: 'Hotel Melia',
+        notes: 'Telemedicina disponível neste período'
+      },
+      {
+        title: 'Viagem para Colombia',
+        type: CalendarEntryType.TRAVEL,
+        start: travelStart,
+        end: travelEnd,
+        allDay: true,
+        timezone: 'America/Bogota',
+        country: 'Colombia',
+        notes: 'Participacao em congresso medico'
+      }
+    ]
+  });
+
+  await prisma.serviceOffering.createMany({
+    data: [
+      {
+        name: 'Aplicacao de Botox Premium',
+        description: 'Protocolo facial completo com toxina importada.',
+        category: 'Estetica',
+        country: 'Brasil',
+        currency: 'BRL',
+        price: 1800,
+        durationMinutes: 90,
+        notes: 'Inclui revisao em 15 dias.'
+      },
+      {
+        name: 'Masterclass Endolaser',
+        description: 'Sessao intensiva para alunos internacionais.',
+        category: 'Treinamento',
+        country: 'Panama',
+        currency: 'USD',
+        price: 2500,
+        durationMinutes: 240,
+        notes: 'Material traduzido incluso.'
+      },
+      {
+        name: 'Consultoria Online',
+        description: 'Avaliação virtual personalizada para novos pacientes.',
+        category: 'Telemedicina',
+        country: 'Portugal',
+        currency: 'EUR',
+        price: 150,
+        durationMinutes: 60
+      }
+    ]
   });
 
   console.log(`Seed concluido. Usuario administrador: ${admin.email} / senha: admin123`);
